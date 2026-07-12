@@ -13,10 +13,12 @@ Research, monitoring and shortlisting create options, not commitments. Booking, 
 - `MODULES.yaml` — machine-readable Travel module inventory and shared Skeleton dependencies;
 - `docs/DOMAIN_COMPOSITION.md` — Travel-owned semantics and shared capability boundaries;
 - `docs/OPPORTUNITY_AND_LIFECYCLE.md` — annual map, weekend radar, modes and statuses;
+- `docs/ACCESS_AND_ROUTE_POLICY.md` — door-to-door access, airport, rail and surface-transport policy;
 - `docs/OFFER_INTELLIGENCE.md` — offer discovery, normalization, verification and dedupe;
 - `docs/TRANSPORT_AND_ADAPTERS.md` — transport gateway, reusable adapters and live monitoring;
 - `docs/DATA_EVIDENCE_AND_SCORING.md` — evidence classes, warehouse, baselines, costing and scoring;
 - `docs/SITUATIONAL_INTELLIGENCE.md` — bounded read-only risk and disruption sensor boundary;
+- `docs/PERSONALIZATION_MONITORING_AND_OUTPUT.md` — private personalization, rechecks and outputs;
 - `docs/PRIVACY_AUTHORITY_AND_SECRETS.md` — public/private/artifact/secret separation;
 - `docs/ROADMAP.md` — staged implementation and dependency gates;
 - `contracts/TRAVEL_CONTRACTS.md` — provider-neutral domain contract catalogue.
