@@ -1,0 +1,233 @@
+schema: travel.module_inventory.v1
+status: PUBLIC_SAFE_ARCHITECTURE_BASELINE
+project_id: travel
+source_refs:
+  - alanua/Skeleton#1750
+  - alanua/Skeleton#1748
+  - alanua/Skeleton#1747
+  - alanua/Skeleton#1749
+  - alanua/Skeleton#1545
+  - alanua/Skeleton#1761
+  - alanua/Travel#1
+
+modes:
+  ANNUAL_MAP:
+    purpose: worldwide discovery and rolling opportunity-window maintenance
+    side_effect_class: proposal
+  SHORTLIST:
+    purpose: live comparison of selected options with current evidence
+    side_effect_class: proposal
+  BOOKING:
+    purpose: booking-ready journey composition after explicit operator selection
+    side_effect_class: proposal
+    forbidden_without_separate_approval:
+      - booking
+      - reservation
+      - payment
+      - contact
+      - cancellation
+      - subscription_change
+
+travel_owned_modules:
+  - module_id: travel.trip_model
+    class: domain_component
+    status: planned
+    purpose: trip, traveller-reference, itinerary, segment and trip-pack semantics
+  - module_id: travel.lifecycle
+    class: domain_component
+    status: planned
+    purpose: option, watch, shortlist, plan, booking-record and completion state transitions
+  - module_id: travel.opportunity_map
+    class: domain_component
+    status: planned
+    purpose: rolling twelve-month opportunity map with window, urgency, confidence and next-review semantics
+  - module_id: travel.global_discovery
+    class: domain_component
+    status: planned
+    purpose: worldwide discovery of destinations, routes, packages, events, natural phenomena and transport corridors
+  - module_id: travel.weekend_radar
+    class: domain_component
+    status: planned
+    purpose: day-trip and two-to-four-day opportunity evaluation with useful-time and leave-use policy
+  - module_id: travel.shortlist
+    class: domain_component
+    status: planned
+    purpose: live comparison, explanation and rank proposals for selected options
+  - module_id: travel.itinerary
+    class: domain_component
+    status: planned
+    purpose: round-trip, open-jaw, linear, rail-core, night-train, bus, ferry, road and package itinerary semantics
+  - module_id: travel.offer_intelligence
+    class: domain_component
+    status: planned
+    purpose: travel-offer discovery, normalization, verification, dedupe, lifecycle and source-health semantics
+  - module_id: travel.transport_coverage
+    class: domain_component
+    status: planned
+    purpose: identify required provider capabilities and missing adapters for a candidate route
+  - module_id: travel.adapter_demand_planner
+    class: domain_component
+    status: planned
+    purpose: create provider adapters only when a real route requires them, then retain validated adapters for reuse
+  - module_id: travel.journey_policy
+    class: domain_component
+    status: planned
+    purpose: multimodal route quality, safe-margin, useful-time, separate-ticket and fallback policy
+  - module_id: travel.live_journey_projection
+    class: domain_component
+    status: planned
+    purpose: project shared live transport observations into trip-specific delay, cancellation and connection-risk state
+  - module_id: travel.stay_intelligence
+    class: domain_component
+    status: planned
+    purpose: accommodation comparison, full-price, cancellation, payment-timing, location and room-condition semantics
+  - module_id: travel.package_intelligence
+    class: domain_component
+    status: planned
+    purpose: package, organizer, transfer, baggage, board, deposit, cancellation and final-price semantics
+  - module_id: travel.activity_intelligence
+    class: domain_component
+    status: planned
+    purpose: event, attraction, food, nature, opening, closure and local-experience proposal semantics
+  - module_id: travel.total_cost_policy
+    class: domain_component
+    status: planned
+    purpose: full realistic cost, cost-per-day, cost-per-useful-day and false-bargain rejection policy
+  - module_id: travel.scoring_explanation
+    class: domain_component
+    status: planned
+    purpose: decomposed value, timing, fit, route, safety, document, urgency and confidence explanation
+  - module_id: travel.price_history_policy
+    class: domain_component
+    status: planned
+    purpose: travel-specific baselines, percentiles, anomaly and route-to-region fallback semantics
+  - module_id: travel.document_gate
+    class: domain_component
+    status: planned
+    purpose: document, entry, transit, carrier-acceptance and re-entry blocker semantics over shared eligibility evidence
+  - module_id: travel.risk_projection
+    class: domain_component
+    status: planned
+    purpose: travel impact of shared weather, disruption, conflict, disaster, health and infrastructure observations
+  - module_id: travel.booking_record
+    class: domain_component
+    status: planned
+    purpose: approved booking-reference and ticket-record semantics without payment authority
+  - module_id: travel.review_proposal
+    class: domain_component
+    status: planned
+    purpose: approve, reject, defer, recheck and expire proposal semantics
+  - module_id: travel.trip_pack
+    class: domain_component
+    status: planned
+    purpose: booking-ready route, timing, stay, rules, warnings, links, alternatives and Plan B manifest
+  - module_id: travel.source_policy
+    class: domain_component
+    status: planned
+    purpose: travel-specific evidence classes, source tiers, freshness and verification thresholds
+
+shared_skeleton_dependencies:
+  - capability: time.calendar
+  - capability: task.workflow
+  - capability: scheduler.loop
+  - capability: notification.attention
+  - capability: connector.acquisition
+  - capability: parser.extract
+  - capability: evidence.provenance
+  - capability: artifact.private_store
+  - capability: entity_resolution
+  - capability: geo.route
+  - capability: map.presentation
+  - capability: tracker.read
+  - capability: document.eligibility
+  - capability: finance.currency
+  - capability: finance.value
+  - capability: weather.forecast
+  - capability: event.calendar
+  - capability: risk.situational_intelligence
+  - capability: memory.gateway
+  - capability: secret.reference
+  - capability: observability.health
+  - capability: approval.gate
+
+adapter_families:
+  transport:
+    - national_rail
+    - regional_transport_union
+    - urban_transit
+    - coach
+    - ferry
+    - airline
+    - airport
+    - gtfs
+    - gtfs_realtime
+    - siri
+    - netex
+    - gbfs
+  travel_offers:
+    - deal_publisher
+    - tour_operator
+    - package_retailer
+    - ota
+    - metasearch
+    - direct_merchant
+    - newsletter
+    - manual_url_import
+  stays:
+    - accommodation_marketplace
+    - direct_property
+    - hotel_chain
+  context:
+    - climate
+    - weather
+    - event
+    - safety_advisory
+    - disaster
+    - aviation_disruption
+    - currency
+    - destination_cost
+
+hard_boundaries:
+  public_repo:
+    allows:
+      - generic_code
+      - contracts
+      - public_provider_metadata
+      - licences
+      - synthetic_fixtures
+      - public_safe_tests
+    forbids:
+      - personal_history
+      - preferences
+      - budgets
+      - watchlists
+      - rankings
+      - route_candidates
+      - private_price_history
+      - raw_tracks
+      - documents
+      - bookings
+      - tickets
+      - payment_data
+      - secret_values
+  private_memory:
+    authority: Skeleton MemoryGateway
+  private_artifacts:
+    authority: approved encrypted artifact store
+  secrets:
+    authority: provider-neutral Secret Store Gate
+    storage: typed opaque references only
+
+external_sensor_policy:
+  worldmonitor:
+    role: optional read_only situational_intelligence sensor
+    authority: none
+    requirements:
+      - allowlisted_operations
+      - provenance_validation
+      - freshness_validation
+      - stale_fallback_detection
+      - simulation_detection
+      - no_private_context_upstream
+      - no_direct_memory_write
+      - no_external_action_authority
