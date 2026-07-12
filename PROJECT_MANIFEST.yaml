@@ -6,13 +6,31 @@ entrypoint: PROJECT_MANIFEST.yaml
 read_order:
   - PROJECT_MANIFEST.yaml
   - README.md
+  - MODULES.yaml
   - docs/ARCHITECTURE.md
+  - docs/DOMAIN_COMPOSITION.md
+  - docs/OPPORTUNITY_AND_LIFECYCLE.md
+  - docs/OFFER_INTELLIGENCE.md
+  - docs/TRANSPORT_AND_ADAPTERS.md
+  - docs/DATA_EVIDENCE_AND_SCORING.md
+  - docs/SITUATIONAL_INTELLIGENCE.md
+  - docs/PRIVACY_AUTHORITY_AND_SECRETS.md
+  - contracts/TRAVEL_CONTRACTS.md
   - adapters/README.md
   - contracts/README.md
   - registry/README.md
+  - docs/ROADMAP.md
 source_repo: alanua/Travel
 privacy_class: public_safe_code_only
-means: reusable travel opportunity, logistics, transport, monitoring, and provider-adapter project
+means: reusable travel opportunity, logistics, transport, monitoring, provider-adapter and booking-ready proposal project
+source_architecture:
+  - alanua/Skeleton#1750
+  - alanua/Skeleton#1748
+  - alanua/Skeleton#1747
+  - alanua/Skeleton#1749
+  - alanua/Skeleton#1545
+  - alanua/Skeleton#1761
+  - alanua/Travel#1
 boundaries:
   public_repo_allows:
     - generic_code
@@ -29,8 +47,16 @@ boundaries:
     - rankings
     - route_candidates
     - private_price_history
+    - raw_tracks
     - document_status
     - bookings_and_tickets
+    - private_decisions
+  private_artifact_store_only:
+    - scans
+    - pdfs
+    - tickets
+    - booking_confirmations
+    - private_source_snapshots
   secret_store_only:
     - api_keys
     - credentials
@@ -41,5 +67,8 @@ rules:
   - research_and_shortlisting_create_options_not_commitments
   - adapters_are_built_on_demand_and_reused_after_validation
   - official_sources_are_preferred
-  - every_observation_keeps_provenance_freshness_and_quality
-  - no_booking_payment_contact_or_cancellation_without_explicit_approval
+  - every_observation_keeps_provenance_freshness_quality_and_simulation_state
+  - no_booking_payment_contact_cancellation_or_subscription_change_without_explicit_approval
+  - travel_composes_shared_skeleton_capabilities_and_does_not_duplicate_them
+  - private_canon_requires_memorygateway_write_and_readback
+  - secrets_are_typed_references_and_never_plain_records
