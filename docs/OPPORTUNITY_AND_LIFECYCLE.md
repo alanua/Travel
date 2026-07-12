@@ -1,20 +1,37 @@
 # Opportunity Map and Lifecycle
 
-Travel maintains options rather than commitments. Research, monitoring and shortlisting may create proposals, but only explicit operator selection can move an option into planning and booking-record states.
+Travel maintains options rather than commitments. Research and monitoring may create proposals, but only explicit operator selection can move an option from opportunity discovery into booking preparation.
 
-## Operating modes
+## Two-mode operating model
 
-### ANNUAL_MAP
+```text
+ANNUAL_MAP_MODE
+→ explicit operator selection
+→ BOOKING_MODE
+```
+
+### ANNUAL_MAP_MODE
 
 Maintains a rolling twelve-month worldwide opportunity map. It records best and cheapest windows, shoulder and avoid periods, route format, expected duration, full-cost range, useful days, lead time, deadline, risks, document state, confidence and next review.
 
-### SHORTLIST
+`WEEKEND_RADAR` is a parallel short-trip surface inside this mode. It may propose day trips, overnights and bounded weekend combinations, but it does not become a separate top-level mode.
 
-Performs live comparison of selected candidates. It rechecks current prices, availability, schedules, baggage, stay terms, route quality, disruptions, documents, weather and total cost.
+### BOOKING_MODE
 
-### BOOKING
+Starts only after explicit operator selection of an opportunity. It performs live rechecks, shortlist comparison, itinerary composition and booking-ready trip-pack preparation.
 
-Produces a booking-ready journey only after explicit selection. It may generate booking order, exact segments, safe margins, ticket rules, stay requirements, day plan, alternatives and Plan B. It does not itself purchase, reserve, contact, cancel or pay.
+Internal stages may include:
+
+```text
+LIVE_SHORTLIST
+→ SELECTED_VARIANT
+→ ITINERARY_COMPOSED
+→ BOOKING_READY
+```
+
+`SHORTLIST` is therefore an internal stage of `BOOKING_MODE`, not a third top-level mode.
+
+`BOOKING_MODE` may generate booking order, exact segments, safe margins, ticket rules, stay requirements, day plan, alternatives and Plan B. It does not itself purchase, reserve, contact, cancel, subscribe or pay.
 
 ## Opportunity lifecycle
 
@@ -80,7 +97,7 @@ Named destinations are research signals, not commitments or exhaustive scope.
 
 ## Weekend radar
 
-Weekend Radar is a parallel short-trip layer rather than a reduced annual-map entry.
+Weekend Radar is a parallel short-trip layer rather than a reduced annual-map entry or a third operating mode.
 
 Supported forms:
 

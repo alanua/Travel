@@ -8,6 +8,21 @@ Travel supports worldwide opportunity discovery, rolling annual-map maintenance,
 
 Research, monitoring and shortlisting create options, not commitments. Booking, reservation, payment, contact, cancellation and subscription changes require a separately approved path and explicit authorization.
 
+## Operating model
+
+Travel has exactly two top-level modes:
+
+```text
+ANNUAL_MAP_MODE
+→ explicit operator selection
+→ BOOKING_MODE
+```
+
+- `ANNUAL_MAP_MODE` maintains the rolling worldwide opportunity map and may run `WEEKEND_RADAR` as a parallel short-trip surface.
+- `BOOKING_MODE` performs live shortlist verification, itinerary composition and booking-ready trip-pack preparation after an option is explicitly selected.
+- `SHORTLIST` is a stage inside `BOOKING_MODE`, not a third top-level mode.
+- Neither mode has booking, payment, reservation, contact, cancellation or subscription authority without a separate approved mutation path.
+
 ## Canonical public-safe inventory
 
 - `MODULES.yaml` — machine-readable Travel module inventory and shared Skeleton dependencies;
