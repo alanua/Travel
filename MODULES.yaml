@@ -11,15 +11,22 @@ source_refs:
   - alanua/Travel#1
 
 modes:
-  ANNUAL_MAP:
+  ANNUAL_MAP_MODE:
     purpose: worldwide discovery and rolling opportunity-window maintenance
     side_effect_class: proposal
-  SHORTLIST:
-    purpose: live comparison of selected options with current evidence
+    includes:
+      - worldwide_discovery
+      - rolling_opportunity_map
+      - weekend_radar
+  BOOKING_MODE:
+    purpose: live verification, shortlist comparison, itinerary composition and booking-ready journey preparation after explicit operator selection
     side_effect_class: proposal
-  BOOKING:
-    purpose: booking-ready journey composition after explicit operator selection
-    side_effect_class: proposal
+    entry_gate: explicit_operator_selection
+    stages:
+      - live_shortlist
+      - selected_variant
+      - itinerary_composed
+      - booking_ready
     forbidden_without_separate_approval:
       - booking
       - reservation
@@ -56,7 +63,7 @@ travel_owned_modules:
   - module_id: travel.shortlist
     class: domain_component
     status: planned
-    purpose: live comparison, explanation and rank proposals for selected options
+    purpose: BOOKING_MODE live-comparison stage for selected options with current evidence and explanation
   - module_id: travel.itinerary
     class: domain_component
     status: planned
