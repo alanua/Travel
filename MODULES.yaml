@@ -45,6 +45,10 @@ travel_owned_modules:
     class: domain_component
     status: planned
     purpose: worldwide discovery of destinations, routes, packages, events, natural phenomena and transport corridors
+  - module_id: travel.opportunity_model
+    class: domain_component
+    status: planned
+    purpose: provider-neutral opportunity scoring using evidence, seasonality, lead time, demand, reliability, risk, documents, route quality and private-profile inputs
   - module_id: travel.weekend_radar
     class: domain_component
     status: planned
@@ -57,6 +61,10 @@ travel_owned_modules:
     class: domain_component
     status: planned
     purpose: round-trip, open-jaw, linear, rail-core, night-train, bus, ferry, road and package itinerary semantics
+  - module_id: travel.access_and_route_policy
+    class: domain_component
+    status: planned
+    purpose: door-to-door origin access, airport choice, surface transport, safe margins, useful-time and false-saving policy
   - module_id: travel.offer_intelligence
     class: domain_component
     status: planned
@@ -97,6 +105,10 @@ travel_owned_modules:
     class: domain_component
     status: planned
     purpose: decomposed value, timing, fit, route, safety, document, urgency and confidence explanation
+  - module_id: travel.data_registry_and_warehouse_policy
+    class: domain_component
+    status: planned
+    purpose: travel-specific provider registry, observation families, retention, baselines, provenance and private warehouse rules
   - module_id: travel.price_history_policy
     class: domain_component
     status: planned
@@ -109,6 +121,18 @@ travel_owned_modules:
     class: domain_component
     status: planned
     purpose: travel impact of shared weather, disruption, conflict, disaster, health and infrastructure observations
+  - module_id: travel.personalization_projection
+    class: domain_component
+    status: planned
+    purpose: apply private history, confirmed preferences, temporary requests and inferred weights without exposing private values to public code or providers
+  - module_id: travel.monitoring_and_alert_policy
+    class: domain_component
+    status: planned
+    purpose: recheck active options, suppress noise, detect material changes and produce bounded proposals through shared scheduling and notification capabilities
+  - module_id: travel.input_and_output_policy
+    class: domain_component
+    status: planned
+    purpose: ask only for essential missing constraints and produce map, shortlist and booking-ready outputs with assumptions and evidence labels
   - module_id: travel.booking_record
     class: domain_component
     status: planned
