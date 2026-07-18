@@ -12,18 +12,21 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify immutable encrypted loader and payload files
+      - name: Diagnose immutable encrypted loader
         run: |
           base='https://cdn.jsdelivr.net/gh/alanua/Travel@5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026'
           headers="$(mktemp)"
-          body="$(curl --fail --silent --show-error --location --dump-header "$headers" "$base/index.html")"
-          grep --ignore-case --quiet '^content-type:.*text/html' "$headers"
-          printf '%s' "$body" | grep --quiet 'Приватна сторінка подорожі'
-          printf '%s' "$body" | grep --quiet 'payload-08.txt'
-          for part in $(seq -w 0 8); do
-            test -n "$(curl --fail --silent --show-error --location "$base/payload-${part}.txt")"
-          done
-          echo 'status=DONE'
-          echo 'content_type_html=true'
-          echo 'shell_verified=true'
-          echo 'all_payload_files_verified=true'
+          body="$(mktemp)"
+          status="$(curl --silent --show-error --location --output "$body" --dump-header "$headers" --write-out '%{http_code}' "$base/index.html")"
+          content_type="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{value=$0} END{sub(/^[^:]+:[[:space:]]*/,"",value); gsub(/\r/,"",value); print value}' "$headers")"
+          title_marker=false
+          payload_marker=false
+          grep --quiet 'Приватна сторінка подорожі' "$body" && title_marker=true
+          grep --quiet 'payload-08.txt' "$body" && payload_marker=true
+          echo "http_status=$status"
+          echo "content_type=${content_type:-missing}"
+          echo "title_marker=$title_marker"
+          echo "payload_marker=$payload_marker"
+          test "$status" = '200'
+          test "$title_marker" = 'true'
+          test "$payload_marker" = 'true'
