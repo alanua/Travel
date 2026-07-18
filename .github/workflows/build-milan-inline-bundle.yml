@@ -1,0 +1,46 @@
+name: Build Milan inline bundle
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/build-milan-inline-bundle.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build bounded inline bundle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files = [
+              'index.html',
+              'payload-00.txt', 'payload-01.txt', 'payload-02.txt',
+              'payload-03.txt', 'payload-04.txt', 'payload-05.txt',
+              'payload-06.txt', 'payload-07.txt', 'payload-07-tail.txt',
+              'payload-08.txt',
+          ]
+          root = Path('milan-2026')
+          out = Path('milan-inline-bundle.txt')
+          with out.open('w', encoding='utf-8', newline='\n') as stream:
+              for name in files:
+                  data = (root / name).read_text(encoding='utf-8')
+                  stream.write(f'@@FILE:{name}@@\n')
+                  stream.write(data)
+                  if not data.endswith('\n'):
+                      stream.write('\n')
+                  stream.write('@@END@@\n')
+          size = out.stat().st_size
+          if not (45000 <= size <= 60000):
+              raise SystemExit(f'unexpected bundle size: {size}')
+          print(f'bundle_size={size}')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: milan-inline-bundle
+          path: milan-inline-bundle.txt
+          retention-days: 1
