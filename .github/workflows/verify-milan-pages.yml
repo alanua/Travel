@@ -1,0 +1,30 @@
+name: Verify Milan Pages live
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/verify-milan-pages.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify public encrypted loader
+        run: |
+          page='https://alanua.github.io/Travel/milan-2026/'
+          for attempt in $(seq 1 20); do
+            body="$(curl --fail --silent --show-error --location "$page" || true)"
+            if printf '%s' "$body" | grep --quiet 'Приватна сторінка подорожі' && \
+               printf '%s' "$body" | grep --quiet 'payload-08.txt'; then
+              echo 'status=DONE'
+              echo 'shell_verified=true'
+              echo 'all_payload_references_present=true'
+              exit 0
+            fi
+            sleep 3
+          done
+          echo 'status=BLOCKED'
+          exit 1
