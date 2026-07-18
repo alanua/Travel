@@ -12,31 +12,29 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Select executable immutable CDN
+      - name: Verify executable immutable page and ciphertext integrity
         run: |
-          set +e
-          candidates=(
-            'https://rawcdn.githack.com/alanua/Travel/5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026/index.html'
-            'https://cdn.statically.io/gh/alanua/Travel/5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026/index.html'
-          )
-          for page in "${candidates[@]}"; do
-            headers="$(mktemp)"
-            body="$(mktemp)"
-            status="$(curl --silent --show-error --location --output "$body" --dump-header "$headers" --write-out '%{http_code}' "$page")"
-            content_type="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{value=$0} END{sub(/^[^:]+:[[:space:]]*/,"",value); gsub(/\r/,"",value); print value}' "$headers")"
-            title_marker=false
-            payload_marker=false
-            grep --quiet 'Приватна сторінка подорожі' "$body" && title_marker=true
-            grep --quiet 'payload-08.txt' "$body" && payload_marker=true
-            echo "candidate=$page"
-            echo "http_status=$status"
-            echo "content_type=${content_type:-missing}"
-            echo "title_marker=$title_marker"
-            echo "payload_marker=$payload_marker"
-            if test "$status" = '200' && printf '%s' "$content_type" | grep --ignore-case --quiet 'text/html' && test "$title_marker" = 'true' && test "$payload_marker" = 'true'; then
-              echo 'status=DONE'
-              exit 0
-            fi
+          base='https://rawcdn.githack.com/alanua/Travel/5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026'
+          headers="$(mktemp)"
+          body="$(mktemp)"
+          status="$(curl --silent --show-error --location --output "$body" --dump-header "$headers" --write-out '%{http_code}' "$base/index.html")"
+          content_type="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{value=$0} END{sub(/^[^:]+:[[:space:]]*/,"",value); gsub(/\r/,"",value); print value}' "$headers")"
+          test "$status" = '200'
+          printf '%s' "$content_type" | grep --ignore-case --quiet 'text/html'
+          grep --quiet 'Приватна сторінка подорожі' "$body"
+          grep --quiet 'payload-08.txt' "$body"
+
+          combined="$(mktemp)"
+          for part in $(seq -w 0 8); do
+            curl --fail --silent --show-error --location "$base/payload-${part}.txt" >> "$combined"
           done
-          echo 'status=BLOCKED'
-          exit 1
+          tr -d '[:space:]' < "$combined" > "$combined.compact"
+          text_sha="$(sha256sum "$combined.compact" | awk '{print $1}')"
+          test "$text_sha" = '2ea639370730aac2e9be8f574f85c837a31cbf53606affcbd922baa6539d4214'
+
+          echo 'status=DONE'
+          echo 'http_status=200'
+          echo 'content_type_html=true'
+          echo 'shell_verified=true'
+          echo 'all_payload_files_verified=true'
+          echo 'ciphertext_integrity_verified=true'
