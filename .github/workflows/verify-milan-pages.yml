@@ -25,7 +25,8 @@ jobs:
           grep --quiet 'payload-08.txt' "$body"
 
           combined="$(mktemp)"
-          for part in $(seq -w 0 8); do
+          for number in $(seq 0 8); do
+            part="$(printf '%02d' "$number")"
             curl --fail --silent --show-error --location "$base/payload-${part}.txt" >> "$combined"
           done
           tr -d '[:space:]' < "$combined" > "$combined.compact"
