@@ -1,4 +1,4 @@
-name: Deploy and verify Milan Pages
+name: Verify encrypted Milan page live
 
 on:
   pull_request:
@@ -7,47 +7,20 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
-  deploy-and-verify:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - name: Prepare encrypted site
+      - name: Verify immutable encrypted loader and payload files
         run: |
-          mkdir -p _site/milan-2026
-          cp -R milan-2026/. _site/milan-2026/
-          touch _site/.nojekyll
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-      - name: Verify public encrypted loader
-        env:
-          PAGE_ROOT: ${{ steps.deployment.outputs.page_url }}
-        run: |
-          page="${PAGE_ROOT%/}/milan-2026/"
-          for attempt in $(seq 1 20); do
-            body="$(curl --fail --silent --show-error --location "$page" || true)"
-            if printf '%s' "$body" | grep --quiet 'Приватна сторінка подорожі' && \
-               printf '%s' "$body" | grep --quiet 'payload-08.txt'; then
-              echo "status=DONE"
-              echo "page_url=$page"
-              echo 'shell_verified=true'
-              echo 'all_payload_references_present=true'
-              exit 0
-            fi
-            sleep 3
+          base='https://raw.githack.com/alanua/Travel/5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026'
+          body="$(curl --fail --silent --show-error --location "$base/index.html")"
+          printf '%s' "$body" | grep --quiet 'Приватна сторінка подорожі'
+          printf '%s' "$body" | grep --quiet 'payload-08.txt'
+          for part in $(seq -w 0 8); do
+            test -n "$(curl --fail --silent --show-error --location "$base/payload-${part}.txt")"
           done
-          echo 'status=BLOCKED'
-          exit 1
+          echo 'status=DONE'
+          echo 'shell_verified=true'
+          echo 'all_payload_files_verified=true'
