@@ -4,43 +4,102 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <meta name="theme-color" content="#f7f5f0">
+  <meta name="theme-color" content="#ffffff">
   <title>Travel — сторінка подорожі</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">До основного вмісту</a>
+  <div class="deal-strip" role="note"><span>Персональний маршрут</span><strong>Повна ціна за двох · без прихованих доплат</strong></div>
   <header class="topbar">
-    <div class="brand" aria-label="Travel"><span class="brand-mark" aria-hidden="true">T</span><span>Travel</span></div>
+    <a class="brand" href="#main" aria-label="Travel"><span class="brand-word">Travel</span></a>
+    <nav class="top-actions" aria-label="Швидка навігація">
+      <a href="#routeTitle">Маршрут</a><a href="#itineraryTitle">Програма</a><a href="#budgetTitle">Вартість</a>
+    </nav>
     <div id="pageStatus" class="status-pill">Кандидат</div>
   </header>
   <main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="tripTitle">
       <div class="hero-gallery" id="heroGallery" aria-label="Фотографії подорожі"></div>
       <div class="hero-copy shell">
-        <p id="eyebrow" class="eyebrow"></p>
+        <div class="hero-badges"><span id="eyebrow" class="eyebrow"></span><span class="deal-badge">Travel shortlist</span></div>
         <h1 id="tripTitle"></h1>
         <p id="subtitle" class="subtitle"></p>
         <div id="heroFacts" class="fact-row" aria-label="Основні параметри"></div>
       </div>
     </section>
-    <div class="shell layout">
+
+    <div class="shell page-grid">
       <div class="content-column">
-        <nav class="date-switcher card" aria-label="Варіанти дат"><div class="section-kicker">Вибір дати</div><div id="dateTabs" class="tabs" role="tablist"></div></nav>
-        <section class="card intro-block" aria-labelledby="whyTitle"><div class="section-kicker">Чому варто їхати</div><h2 id="whyTitle">Головна ідея маршруту</h2><p id="whyText" class="lead"></p><div id="highlights" class="highlight-grid"></div></section>
-        <section class="card" aria-labelledby="routeTitle"><div class="section-kicker">Маршрут</div><h2 id="routeTitle">Як проходить подорож</h2><ol id="routeLine" class="route-line"></ol></section>
-        <section class="card" aria-labelledby="itineraryTitle"><div class="section-kicker">День за днем</div><h2 id="itineraryTitle">Програма подорожі</h2><div id="itinerary" class="itinerary"></div></section>
-        <section class="card" aria-labelledby="stayTitle"><div class="section-kicker">Проживання</div><h2 id="stayTitle">Де зупинитися</h2><div id="stays" class="stay-grid"></div></section>
-        <section class="card split-section" aria-labelledby="includedTitle"><div><div class="section-kicker">У вартості</div><h2 id="includedTitle">Що включено</h2><ul id="included" class="check-list"></ul></div><div><div class="section-kicker">Окремо</div><h2>Що не включено</h2><ul id="excluded" class="plain-list"></ul></div></section>
-        <section class="card" aria-labelledby="budgetTitle"><div class="section-kicker">Повна вартість</div><h2 id="budgetTitle">Бюджет за двох</h2><div id="budgetBreakdown" class="budget-list"></div><div class="budget-total-row"><span>Реалістичний підсумок</span><strong id="budgetTotal"></strong></div></section>
-        <section class="card" aria-labelledby="practicalTitle"><div class="section-kicker">Практично</div><h2 id="practicalTitle">Документи, ризики та перевірки</h2><div id="practical" class="practical-grid"></div></section>
-        <section class="card" aria-labelledby="sourcesTitle"><div class="section-kicker">Докази</div><h2 id="sourcesTitle">Джерела та актуальність</h2><div id="sources" class="source-list"></div></section>
+        <nav class="date-switcher section-block" aria-label="Варіанти дат">
+          <div class="section-heading compact"><div><p class="section-kicker">Варіанти</p><h2>Обери формат подорожі</h2></div></div>
+          <div id="dateTabs" class="tabs" role="tablist"></div>
+        </nav>
+
+        <section class="section-block intro-block" aria-labelledby="whyTitle">
+          <div class="section-heading"><div><p class="section-kicker">Твоя подорож</p><h2 id="whyTitle">Чому цей маршрут вартий уваги</h2></div></div>
+          <p id="whyText" class="lead"></p>
+          <div id="highlights" class="experience-grid"></div>
+        </section>
+
+        <section class="section-block route-section" aria-labelledby="routeTitle">
+          <div class="section-heading"><div><p class="section-kicker">Маршрут</p><h2 id="routeTitle">Точки подорожі</h2></div></div>
+          <ol id="routeLine" class="route-line"></ol>
+        </section>
+
+        <section class="section-block" aria-labelledby="itineraryTitle">
+          <div class="section-heading"><div><p class="section-kicker">День за днем</p><h2 id="itineraryTitle">Програма подорожі</h2></div><span class="section-note">Натисни, щоб відкрити день</span></div>
+          <div id="itinerary" class="itinerary"></div>
+        </section>
+
+        <section class="section-block" aria-labelledby="stayTitle">
+          <div class="section-heading"><div><p class="section-kicker">Проживання</p><h2 id="stayTitle">Основні та альтернативні варіанти</h2></div></div>
+          <div id="stays" class="stay-grid"></div>
+        </section>
+
+        <section id="activitiesSection" class="section-block" aria-labelledby="activitiesTitle" hidden>
+          <div class="section-heading"><div><p class="section-kicker">Опціонально</p><h2 id="activitiesTitle">Активності та доповнення</h2></div></div>
+          <div id="activities" class="activity-grid"></div>
+        </section>
+
+        <section class="section-block split-section" aria-labelledby="includedTitle">
+          <div><p class="section-kicker">У вартості</p><h2 id="includedTitle">Що включено</h2><ul id="included" class="check-list"></ul></div>
+          <div><p class="section-kicker">Окремо</p><h2>Що не включено</h2><ul id="excluded" class="plain-list"></ul></div>
+        </section>
+
+        <section class="section-block" aria-labelledby="budgetTitle">
+          <div class="section-heading"><div><p class="section-kicker">Повна вартість</p><h2 id="budgetTitle">Реалістичний бюджет за двох</h2></div></div>
+          <div id="budgetBreakdown" class="budget-list"></div>
+          <div class="budget-total-row"><span>Разом за двох</span><strong id="budgetTotal"></strong></div>
+        </section>
+
+        <section class="section-block" aria-labelledby="practicalTitle">
+          <div class="section-heading"><div><p class="section-kicker">Перед рішенням</p><h2 id="practicalTitle">Документи, ризики та перевірки</h2></div></div>
+          <div id="practical" class="practical-grid"></div>
+        </section>
+
+        <section class="section-block" aria-labelledby="sourcesTitle">
+          <div class="section-heading"><div><p class="section-kicker">Докази</p><h2 id="sourcesTitle">Джерела та актуальність</h2></div></div>
+          <div id="sources" class="source-list"></div>
+        </section>
       </div>
-      <aside class="booking-card card" aria-label="Підсумок обраної дати"><div class="section-kicker">Обраний варіант</div><h2 id="selectedDateTitle"></h2><p id="selectedDateMeta" class="muted"></p><div class="price-block"><span>За двох</span><strong id="totalPrice"></strong><small id="perPersonPrice"></small></div><div id="selectedFacts" class="summary-facts"></div><div id="primaryActions" class="action-stack"></div><p id="priceEvidence" class="evidence-note"></p></aside>
+
+      <aside class="booking-card" aria-label="Підсумок обраної дати">
+        <div class="booking-card-inner">
+          <p class="section-kicker">Обраний варіант</p>
+          <h2 id="selectedDateTitle"></h2>
+          <p id="selectedDateMeta" class="muted"></p>
+          <div class="price-block"><span>Повна сума за двох</span><strong id="totalPrice"></strong><small id="perPersonPrice"></small></div>
+          <div id="selectedFacts" class="summary-facts"></div>
+          <div id="primaryActions" class="action-stack"></div>
+          <div class="trust-list"><span>✓ Без бронювання</span><span>✓ Повна вартість</span><span>✓ Поточні ризики</span></div>
+          <p id="priceEvidence" class="evidence-note"></p>
+        </div>
+      </aside>
     </div>
   </main>
-  <div class="mobile-actionbar" id="mobileActionbar" aria-label="Швидкі дії"><div><small>За двох</small><strong id="mobilePrice"></strong></div><a id="mobilePrimaryAction" class="button primary" href="#itineraryTitle">Дивитися план</a></div>
+  <div class="mobile-actionbar" id="mobileActionbar" aria-label="Швидкі дії"><div><small>За двох</small><strong id="mobilePrice"></strong></div><a id="mobilePrimaryAction" class="button primary" href="#itineraryTitle">Дивитися маршрут</a></div>
   <noscript>Для відображення сторінки потрібен JavaScript.</noscript>
   <script src="app.js" defer></script>
 </body>
