@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#f7f5f0">
+  <title>Travel — сторінка подорожі</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">До основного вмісту</a>
+  <header class="topbar">
+    <div class="brand" aria-label="Travel"><span class="brand-mark" aria-hidden="true">T</span><span>Travel</span></div>
+    <div id="pageStatus" class="status-pill">Кандидат</div>
+  </header>
+  <main id="main" tabindex="-1">
+    <section class="hero" aria-labelledby="tripTitle">
+      <div class="hero-gallery" id="heroGallery" aria-label="Фотографії подорожі"></div>
+      <div class="hero-copy shell">
+        <p id="eyebrow" class="eyebrow"></p>
+        <h1 id="tripTitle"></h1>
+        <p id="subtitle" class="subtitle"></p>
+        <div id="heroFacts" class="fact-row" aria-label="Основні параметри"></div>
+      </div>
+    </section>
+    <div class="shell layout">
+      <div class="content-column">
+        <nav class="date-switcher card" aria-label="Варіанти дат"><div class="section-kicker">Вибір дати</div><div id="dateTabs" class="tabs" role="tablist"></div></nav>
+        <section class="card intro-block" aria-labelledby="whyTitle"><div class="section-kicker">Чому варто їхати</div><h2 id="whyTitle">Головна ідея маршруту</h2><p id="whyText" class="lead"></p><div id="highlights" class="highlight-grid"></div></section>
+        <section class="card" aria-labelledby="routeTitle"><div class="section-kicker">Маршрут</div><h2 id="routeTitle">Як проходить подорож</h2><ol id="routeLine" class="route-line"></ol></section>
+        <section class="card" aria-labelledby="itineraryTitle"><div class="section-kicker">День за днем</div><h2 id="itineraryTitle">Програма подорожі</h2><div id="itinerary" class="itinerary"></div></section>
+        <section class="card" aria-labelledby="stayTitle"><div class="section-kicker">Проживання</div><h2 id="stayTitle">Де зупинитися</h2><div id="stays" class="stay-grid"></div></section>
+        <section class="card split-section" aria-labelledby="includedTitle"><div><div class="section-kicker">У вартості</div><h2 id="includedTitle">Що включено</h2><ul id="included" class="check-list"></ul></div><div><div class="section-kicker">Окремо</div><h2>Що не включено</h2><ul id="excluded" class="plain-list"></ul></div></section>
+        <section class="card" aria-labelledby="budgetTitle"><div class="section-kicker">Повна вартість</div><h2 id="budgetTitle">Бюджет за двох</h2><div id="budgetBreakdown" class="budget-list"></div><div class="budget-total-row"><span>Реалістичний підсумок</span><strong id="budgetTotal"></strong></div></section>
+        <section class="card" aria-labelledby="practicalTitle"><div class="section-kicker">Практично</div><h2 id="practicalTitle">Документи, ризики та перевірки</h2><div id="practical" class="practical-grid"></div></section>
+        <section class="card" aria-labelledby="sourcesTitle"><div class="section-kicker">Докази</div><h2 id="sourcesTitle">Джерела та актуальність</h2><div id="sources" class="source-list"></div></section>
+      </div>
+      <aside class="booking-card card" aria-label="Підсумок обраної дати"><div class="section-kicker">Обраний варіант</div><h2 id="selectedDateTitle"></h2><p id="selectedDateMeta" class="muted"></p><div class="price-block"><span>За двох</span><strong id="totalPrice"></strong><small id="perPersonPrice"></small></div><div id="selectedFacts" class="summary-facts"></div><div id="primaryActions" class="action-stack"></div><p id="priceEvidence" class="evidence-note"></p></aside>
+    </div>
+  </main>
+  <div class="mobile-actionbar" id="mobileActionbar" aria-label="Швидкі дії"><div><small>За двох</small><strong id="mobilePrice"></strong></div><a id="mobilePrimaryAction" class="button primary" href="#itineraryTitle">Дивитися план</a></div>
+  <noscript>Для відображення сторінки потрібен JavaScript.</noscript>
+  <script src="app.js" defer></script>
+</body>
+</html>
