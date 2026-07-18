@@ -12,6 +12,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: travel-pages
@@ -39,3 +40,27 @@ jobs:
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published shell
+        env:
+          PAGE_ROOT: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          page="${PAGE_ROOT%/}/milan-2026/"
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent --show-error --location "$page" | grep --quiet 'Приватна сторінка подорожі'; then
+              echo "PAGE_URL=$page" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
+      - name: Publish deployment receipt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Travel Pages deployment receipt ${GITHUB_RUN_ID}" \
+            --body "status=DONE
+          page_url=${PAGE_URL}
+          commit=${GITHUB_SHA}
+          shell_verified=true"
