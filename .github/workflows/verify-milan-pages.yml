@@ -1,4 +1,4 @@
-name: Verify Milan Pages live
+name: Deploy and verify Milan Pages
 
 on:
   pull_request:
@@ -7,19 +7,42 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  verify:
+  deploy-and-verify:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Verify public encrypted loader
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Prepare encrypted site
         run: |
-          page='https://alanua.github.io/Travel/milan-2026/'
+          mkdir -p _site/milan-2026
+          cp -R milan-2026/. _site/milan-2026/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify public encrypted loader
+        env:
+          PAGE_ROOT: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          page="${PAGE_ROOT%/}/milan-2026/"
           for attempt in $(seq 1 20); do
             body="$(curl --fail --silent --show-error --location "$page" || true)"
             if printf '%s' "$body" | grep --quiet 'Приватна сторінка подорожі' && \
                printf '%s' "$body" | grep --quiet 'payload-08.txt'; then
-              echo 'status=DONE'
+              echo "status=DONE"
+              echo "page_url=$page"
               echo 'shell_verified=true'
               echo 'all_payload_references_present=true'
               exit 0
