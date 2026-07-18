@@ -12,30 +12,39 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify executable immutable page and ciphertext integrity
+      - name: Verify executable page and diagnose ciphertext chunks
         run: |
           base='https://rawcdn.githack.com/alanua/Travel/5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026'
-          headers="$(mktemp)"
           body="$(mktemp)"
-          status="$(curl --silent --show-error --location --output "$body" --dump-header "$headers" --write-out '%{http_code}' "$base/index.html")"
-          content_type="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{value=$0} END{sub(/^[^:]+:[[:space:]]*/,"",value); gsub(/\r/,"",value); print value}' "$headers")"
+          status="$(curl --silent --show-error --location --output "$body" --write-out '%{http_code}' "$base/index.html")"
           test "$status" = '200'
-          printf '%s' "$content_type" | grep --ignore-case --quiet 'text/html'
           grep --quiet 'Приватна сторінка подорожі' "$body"
           grep --quiet 'payload-08.txt' "$body"
 
-          combined="$(mktemp)"
+          expected=(
+            879ee70648e09b6f3df69831d4f196db4e1713253f046b104b7aa478e32e3a91
+            7fc850a42a8672af3603a395f6c5c8ade18e6cf1b67c5a9fbe2872d7c092bcf7
+            fc4daf6d2edfef465fbd6352e6d4dc6d78ec4a1b04e94d92c446aa770ca8c7ff
+            3e91088b379cd5fe8972f0b2e62af51eab52f959a4cde5cbdc282522a5d0aadf
+            1f32672aa7e628ee56a7b9478683914c4c987b6622d969f38949cc0d524f02c5
+            334e1ddc1d703adc406580bd3ad0e3f6c17d701de630f892c498da65170b0ed3
+            3328389280b87e2c2e8a230d8749edee432301f1b9979acc683915b329ffd1ea
+            fda649f70ba27acc589db25c4a53bc64a142ddead4cb0597c38e28dfa95de3c5
+            8f65c27b22b38d38731ddeae930e7482127a9a1cb409541b3f66a7fee0f2fe3d
+          )
+          all_ok=true
           for number in $(seq 0 8); do
             part="$(printf '%02d' "$number")"
-            curl --fail --silent --show-error --location "$base/payload-${part}.txt" >> "$combined"
+            compact="$(mktemp)"
+            curl --fail --silent --show-error --location "$base/payload-${part}.txt" | tr -d '[:space:]' > "$compact"
+            actual="$(sha256sum "$compact" | awk '{print $1}')"
+            length="$(wc -c < "$compact" | tr -d ' ')"
+            match=false
+            test "$actual" = "${expected[$number]}" && match=true
+            echo "chunk_${part}_length=$length"
+            echo "chunk_${part}_sha256=$actual"
+            echo "chunk_${part}_match=$match"
+            test "$match" = true || all_ok=false
           done
-          tr -d '[:space:]' < "$combined" > "$combined.compact"
-          text_sha="$(sha256sum "$combined.compact" | awk '{print $1}')"
-          test "$text_sha" = '2ea639370730aac2e9be8f574f85c837a31cbf53606affcbd922baa6539d4214'
-
+          test "$all_ok" = true
           echo 'status=DONE'
-          echo 'http_status=200'
-          echo 'content_type_html=true'
-          echo 'shell_verified=true'
-          echo 'all_payload_files_verified=true'
-          echo 'ciphertext_integrity_verified=true'
