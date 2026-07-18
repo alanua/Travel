@@ -14,13 +14,16 @@ jobs:
     steps:
       - name: Verify immutable encrypted loader and payload files
         run: |
-          base='https://raw.githack.com/alanua/Travel/5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026'
-          body="$(curl --fail --silent --show-error --location "$base/index.html")"
+          base='https://cdn.jsdelivr.net/gh/alanua/Travel@5a0957d6aef67713d766e2d91fd4fe628916312e/milan-2026'
+          headers="$(mktemp)"
+          body="$(curl --fail --silent --show-error --location --dump-header "$headers" "$base/index.html")"
+          grep --ignore-case --quiet '^content-type:.*text/html' "$headers"
           printf '%s' "$body" | grep --quiet 'Приватна сторінка подорожі'
           printf '%s' "$body" | grep --quiet 'payload-08.txt'
           for part in $(seq -w 0 8); do
             test -n "$(curl --fail --silent --show-error --location "$base/payload-${part}.txt")"
           done
           echo 'status=DONE'
+          echo 'content_type_html=true'
           echo 'shell_verified=true'
           echo 'all_payload_files_verified=true'
