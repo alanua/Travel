@@ -1,0 +1,50 @@
+name: Publish encrypted Travel pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'milan-2026/**'
+      - '.github/workflows/publish-encrypted-travel-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: travel-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build bounded encrypted site artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f milan-2026/index.html
+          test -f milan-2026/payload-08.txt
+          rm -rf _site
+          mkdir -p _site/milan-2026
+          cp milan-2026/index.html milan-2026/payload-*.txt _site/milan-2026/
+          find _site -type f -exec chmod 0644 {} +
+          test "$(find _site/milan-2026 -maxdepth 1 -type f | wc -l)" -eq 11
+          ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' _site
+      - name: Configure and enable Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
