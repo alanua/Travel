@@ -42,6 +42,17 @@ jobs:
           find _site -type f -exec chmod 0644 {} +
           test "$(find _site/milan-2026 -maxdepth 1 -type f | wc -l)" -eq 11
           ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' _site
+      - name: Probe direct gh-pages endpoint
+        shell: bash
+        run: |
+          set -u
+          code="$(curl -L -sS -o /tmp/page.html -w '%{http_code}' --connect-timeout 10 --max-time 30 https://alanua.github.io/Travel/milan-2026/ || true)"
+          echo "direct_pages_http_status=$code"
+          if [[ "$code" == "200" ]] && grep -q 'Приватна сторінка подорожі' /tmp/page.html; then
+            echo 'direct_pages_loader_verified=true'
+          else
+            echo 'direct_pages_loader_verified=false'
+          fi
       - name: Configure and enable Pages
         uses: actions/configure-pages@v5
         with:
