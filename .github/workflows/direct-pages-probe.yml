@@ -1,0 +1,25 @@
+name: Direct Travel Pages probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/direct-pages-probe.yml'
+      - '.github/workflows/publish-encrypted-travel-pages.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe direct endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -L -sS -o /tmp/page.html -w '%{http_code}' --connect-timeout 10 --max-time 30 https://alanua.github.io/Travel/milan-2026/)"
+          echo "direct_pages_http_status=$code"
+          test "$code" = "200"
+          grep -q 'Приватна сторінка подорожі' /tmp/page.html
+          echo 'direct_pages_loader_verified=true'
