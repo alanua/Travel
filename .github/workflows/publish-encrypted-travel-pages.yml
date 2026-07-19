@@ -6,6 +6,10 @@ on:
     paths:
       - 'milan-2026/**'
       - '.github/workflows/publish-encrypted-travel-pages.yml'
+  pull_request:
+    paths:
+      - 'milan-2026/**'
+      - '.github/workflows/publish-encrypted-travel-pages.yml'
   workflow_dispatch:
 
 permissions:
