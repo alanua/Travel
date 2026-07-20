@@ -12,6 +12,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: travel-pages
@@ -27,6 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build bounded encrypted site artifact
+        id: build
         shell: bash
         run: |
           set -euo pipefail
@@ -40,12 +42,44 @@ jobs:
           test "$(find _site/milan-2026 -maxdepth 1 -type f | wc -l)" -eq 11
           ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' _site
       - name: Configure and enable Pages
+        id: configure
+        continue-on-error: true
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload encrypted site artifact
+        id: upload
+        if: steps.configure.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
       - name: Deploy
         id: deployment
+        if: steps.configure.outcome == 'success' && steps.upload.outcome == 'success'
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+      - name: Publish public-safe deployment receipt
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONFIGURE_OUTCOME: ${{ steps.configure.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          DEPLOY_OUTCOME: ${{ steps.deployment.outcome }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          body=$(cat <<EOF
+          Encrypted Milan Pages deployment receipt
+
+          - configure: ${CONFIGURE_OUTCOME:-not_run}
+          - upload: ${UPLOAD_OUTCOME:-not_run}
+          - deploy: ${DEPLOY_OUTCOME:-not_run}
+          - page_url: ${PAGE_URL:-not_available}
+          - plaintext_itinerary_published: false
+          - fragment_key_published: false
+          EOF
+          )
+          gh issue comment 14 --repo alanua/Travel --body "$body"
+          test "${DEPLOY_OUTCOME:-}" = "success"
