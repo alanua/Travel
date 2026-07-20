@@ -6,6 +6,10 @@ on:
     paths:
       - 'milan-2026/**'
       - '.github/workflows/publish-encrypted-travel-pages.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-encrypted-travel-pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -15,7 +19,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: travel-pages
+  group: travel-pages-${{ github.event_name }}
   cancel-in-progress: false
 
 jobs:
@@ -73,6 +77,7 @@ jobs:
           body=$(cat <<EOF
           Encrypted Milan Pages deployment receipt
 
+          - event: ${GITHUB_EVENT_NAME}
           - configure: ${CONFIGURE_OUTCOME:-not_run}
           - upload: ${UPLOAD_OUTCOME:-not_run}
           - deploy: ${DEPLOY_OUTCOME:-not_run}
