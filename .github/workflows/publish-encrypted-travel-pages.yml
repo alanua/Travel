@@ -84,4 +84,47 @@ jobs:
           gh issue comment 14 --repo alanua/Travel --body "$body"
           test "${DEPLOY_OUTCOME:-}" = "success"
 
-# Pages enablement verified through PR #17 before this deployment trigger.
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify published loader over HTTPS
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://alanua.github.io/Travel/milan-2026/'
+          ok=false
+          code=000
+          for attempt in $(seq 1 30); do
+            code=$(curl -L -sS -o /tmp/milan-loader.html -w '%{http_code}' --connect-timeout 10 --max-time 20 "$url" || true)
+            if [ "$code" = 200 ] && grep -q 'Приватна сторінка подорожі' /tmp/milan-loader.html && grep -q 'payload-08.txt' /tmp/milan-loader.html; then
+              ok=true
+              break
+            fi
+            sleep 10
+          done
+          echo "http_code=$code" >> "$GITHUB_OUTPUT"
+          echo "verified=$ok" >> "$GITHUB_OUTPUT"
+          test "$ok" = true
+      - name: Publish live verification receipt
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HTTP_CODE: ${{ steps.verify.outputs.http_code }}
+          VERIFIED: ${{ steps.verify.outputs.verified }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          body=$(cat <<EOF
+          Encrypted Milan Pages live verification
+
+          - url: https://alanua.github.io/Travel/milan-2026/
+          - http_code: ${HTTP_CODE:-unknown}
+          - loader_verified: ${VERIFIED:-false}
+          - plaintext_itinerary_published: false
+          - fragment_key_published: false
+          EOF
+          )
+          gh issue comment 14 --repo alanua/Travel --body "$body"
+          test "${VERIFIED:-false}" = true
