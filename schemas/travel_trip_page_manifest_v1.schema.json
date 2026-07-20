@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Travel Trip Page Manifest V1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "trip_id", "title", "locale", "publication_profile_id", "publication_mode"],
+  "properties": {
+    "schema_version": {"enum": [1, "1", "1.0"]},
+    "trip_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"},
+    "title": {"type": "string", "minLength": 3},
+    "locale": {"type": "string", "minLength": 2},
+    "publication_profile_id": {"type": "string", "minLength": 3},
+    "publication_mode": {"enum": ["create", "update_owned"]},
+    "operator_approval": {"enum": ["publish_page_v1", "publish_page_adopt_v1"]},
+    "trip_data": {"type": "object"},
+    "trip_data_ref": {"type": "string"},
+    "date_windows": {"type": "array"},
+    "route": {"type": "array"},
+    "itinerary": {"type": "array"},
+    "practical": {"type": "array"},
+    "image_source_metadata": {"oneOf": [{"type": "array"}, {"type": "object"}]},
+    "calendar_event_refs": {"type": "array"},
+    "backend_options": {"type": "object"}
+  },
+  "anyOf": [
+    {"required": ["trip_data"]},
+    {"required": ["trip_data_ref"]},
+    {"required": ["date_windows", "route", "practical"]},
+    {"required": ["itinerary", "route", "practical"]}
+  ]
+}
