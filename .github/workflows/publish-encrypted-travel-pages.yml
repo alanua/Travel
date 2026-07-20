@@ -83,3 +83,5 @@ jobs:
           )
           gh issue comment 14 --repo alanua/Travel --body "$body"
           test "${DEPLOY_OUTCOME:-}" = "success"
+
+# Pages enablement verified through PR #17 before this deployment trigger.
