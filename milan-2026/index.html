@@ -1,55 +1,9 @@
 <!doctype html>
-<html lang="uk">
+<html lang="uk" data-skeleton-page-revision="a056c7fcb2bc71ea6135e542c3b6ff8ff481ef70c9d0cda5009b37522549ac4a">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
-  <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#ffffff">
-  <title>Приватна сторінка подорожі</title>
-  <style>
-    :root{--bg:#f6f8f7;--ink:#161616;--muted:#666;--accent:#0b6e5b}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px}
-    main{width:min(100%,520px);background:#fff;border:1px solid #dfe7e4;border-radius:20px;padding:32px;box-shadow:0 18px 50px rgba(20,60,50,.09)}
-    .mark{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:#fff;font-weight:900;margin-bottom:22px}
-    h1{font-size:clamp(1.9rem,8vw,2.8rem);line-height:1.03;letter-spacing:-.045em;margin:0 0 14px}p{color:var(--muted);margin:0;line-height:1.6}
-    .bar{height:8px;border-radius:99px;background:#e8efed;overflow:hidden;margin-top:28px}.bar span{display:block;width:42%;height:100%;background:var(--accent);border-radius:inherit;animation:move 1.25s ease-in-out infinite alternate}
-    .error{display:none;margin-top:22px;padding:14px;border-radius:12px;background:#fff0e8;color:#8e4512;font-weight:700}@keyframes move{to{transform:translateX(138%)}}@media(max-width:480px){main{padding:26px 22px;border-radius:16px}}
-  </style>
-</head>
-<body>
-  <main aria-live="polite">
-    <div class="mark" aria-hidden="true">T</div>
-    <h1>Приватна сторінка подорожі</h1>
-    <p id="status">Перевіряю захищене посилання та відкриваю сторінку…</p>
-    <div class="bar" id="bar"><span></span></div>
-    <div class="error" id="error">Посилання неповне або недійсне.</div>
-  </main>
-  <script>
-  (()=>{'use strict';
-    const files=['payload-00.txt','payload-01.txt','payload-02.txt','payload-03.txt','payload-04.txt','payload-05.txt','payload-06.txt','payload-07.txt','payload-07-tail.txt','payload-08.txt'];
-    const nonce='KhpaUZ-fKTaxC2bA';
-    const aad=new TextEncoder().encode('travel:milan-2026:v1');
-    const decode=s=>{s=s.replace(/\s/g,'').replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);const raw=atob(s);return Uint8Array.from(raw,c=>c.charCodeAt(0));};
-    const fail=()=>{document.getElementById('status').textContent='Доступ не підтверджено.';document.getElementById('bar').style.display='none';document.getElementById('error').style.display='block';};
-    (async()=>{try{
-      const params=new URLSearchParams(location.hash.slice(1));
-      const keyText=params.get('k');
-      const date=params.get('date')||'2026-10-15';
-      if(!keyText)return fail();
-      const keyBytes=decode(keyText);
-      if(keyBytes.length!==32)return fail();
-      const parts=await Promise.all(files.map(f=>fetch(f,{cache:'no-store',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('payload');return r.text();})));
-      const key=await crypto.subtle.importKey('raw',keyBytes,'AES-GCM',false,['decrypt']);
-      const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(nonce),additionalData:aad,tagLength:128},key,decode(parts.join('')));
-      let page=new TextDecoder().decode(plain);
-      if(!page.startsWith('<!doctype html>'))return fail();
-      page=page.replace('</head>','<link rel="stylesheet" href="enhance.css?v=2"></head>');
-      page=page.replace('</body>','<script src="enhance.js?v=2"><\/script></body>');
-      history.replaceState(null,'','#'+date);
-      document.open();document.write(page);document.close();
-    }catch(error){console.error(error);fail();}})();
-  })();
-  </script>
-</body>
-</html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex"><meta name="referrer" content="no-referrer">
+<title>Приватна сторінка подорожі</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;font:16px system-ui;background:#f6f8f7;color:#17201d;padding:20px}main{width:min(88vw,520px);background:#fff;border:1px solid #dfe8e4;border-radius:16px;padding:28px;box-shadow:0 16px 50px #10241c14}.bar{height:7px;background:#dfece7;border-radius:99px;overflow:hidden;margin-top:22px}.bar:after{content:"";display:block;width:38%;height:100%;background:#0b6e5b;animation:m 1.1s infinite alternate}@keyframes m{to{transform:translateX(165%)}}.error{color:#8b2d1f}</style>
+</head><body><main aria-live="polite"><h1>Приватна сторінка подорожі</h1><p id="status">Перевіряю захищене посилання…</p><div class="bar" id="bar"></div></main>
+<script>(()=>{'use strict';const rev='a056c7fcb2bc71ea6135e542c3b6ff8ff481ef70c9d0cda5009b37522549ac4a',te=new TextEncoder(),td=new TextDecoder();const b64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};const cat=(...a)=>{const n=a.reduce((s,x)=>s+x.length,0),o=new Uint8Array(n);let p=0;for(const x of a){o.set(x,p);p+=x.length}return o};const fail=()=>{document.getElementById('status').textContent='Посилання недійсне або сторінка пошкоджена.';document.getElementById('status').className='error';document.getElementById('bar').remove()};(async()=>{try{const params=new URLSearchParams(location.hash.slice(1)),keyText=params.get('k');if(!keyText)return fail();const secret=b64(keyText);if(secret.length!==32)return fail();const payload=await fetch('payload.json?rev='+rev,{cache:'no-store',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw 0;return r.json()});if(payload.version!==1||payload.revision!==rev)throw 0;const base=await crypto.subtle.importKey('raw',secret,'HKDF',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:b64(payload.salt),info:te.encode('skeleton-page-publisher-v1')},base,512);const material=new Uint8Array(bits),enc=material.slice(0,32),mac=material.slice(32),macKey=await crypto.subtle.importKey('raw',mac,{name:'HMAC',hash:'SHA-256'},false,['verify']);const cipher=b64(payload.ciphertext),auth=cat(te.encode('SPP1'),b64(payload.salt),b64(payload.iv),cipher);if(!await crypto.subtle.verify('HMAC',macKey,b64(payload.mac),auth))throw 0;const aes=await crypto.subtle.importKey('raw',enc,'AES-CTR',false,['decrypt']);const plain=await crypto.subtle.decrypt({name:'AES-CTR',counter:b64(payload.iv),length:128},aes,cipher);const page=td.decode(plain);if(!/^<!doctype html>/i.test(page))throw 0;params.delete('k');history.replaceState(null,'',params.size?'#'+params.toString():location.pathname+location.search);document.open();document.write(page);document.close()}catch{fail()}})()})();</script></body></html>
