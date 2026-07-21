@@ -34,12 +34,14 @@ jobs:
           set -euo pipefail
           test -f milan-2026/index.html
           test -f milan-2026/payload-08.txt
+          test -f milan-2026/enhance.css
+          test -f milan-2026/enhance.js
           rm -rf _site
           mkdir -p _site/milan-2026
-          cp milan-2026/index.html milan-2026/payload-*.txt _site/milan-2026/
+          cp milan-2026/index.html milan-2026/payload-*.txt milan-2026/enhance.css milan-2026/enhance.js _site/milan-2026/
           touch _site/.nojekyll
           find _site -type f -exec chmod 0644 {} +
-          test "$(find _site/milan-2026 -maxdepth 1 -type f | wc -l)" -eq 11
+          test "$(find _site/milan-2026 -maxdepth 1 -type f | wc -l)" -eq 13
           ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' _site
       - name: Configure and enable Pages
         id: configure
@@ -77,6 +79,8 @@ jobs:
           - upload: ${UPLOAD_OUTCOME:-not_run}
           - deploy: ${DEPLOY_OUTCOME:-not_run}
           - page_url: ${PAGE_URL:-not_available}
+          - encrypted_payload_parts: 10
+          - public_enhancement_assets: 2
           - plaintext_itinerary_published: false
           - fragment_key_published: false
           EOF
@@ -85,43 +89,72 @@ jobs:
           test "${DEPLOY_OUTCOME:-}" = "success"
 
   verify-live:
+    needs: deploy
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Verify published loader over HTTPS
+      - uses: actions/checkout@v4
+      - name: Verify exact published revision over HTTPS
         id: verify
         shell: bash
         run: |
           set -euo pipefail
           url='https://alanua.github.io/Travel/milan-2026/'
+          expected=$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+          text = Path("milan-2026/index.html").read_text(encoding="utf-8")
+          match = re.search(r'data-skeleton-page-revision="([a-f0-9]{64})"', text)
+          if not match:
+              raise SystemExit("missing_revision_marker")
+          print(match.group(1))
+          PY
+          )
           ok=false
           code=000
+          css_code=000
+          js_code=000
           for attempt in $(seq 1 30); do
             code=$(curl -L -sS -o /tmp/milan-loader.html -w '%{http_code}' --connect-timeout 10 --max-time 20 "$url" || true)
-            if [ "$code" = 200 ] && grep -q 'Приватна сторінка подорожі' /tmp/milan-loader.html && grep -q 'payload-08.txt' /tmp/milan-loader.html; then
+            css_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "${url}enhance.css?v=${expected:0:12}" || true)
+            js_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "${url}enhance.js?v=${expected:0:12}" || true)
+            if [ "$code" = 200 ] &&
+               grep -q "data-skeleton-page-revision=\"$expected\"" /tmp/milan-loader.html &&
+               grep -q 'payload-08.txt' /tmp/milan-loader.html &&
+               [ "$css_code" = 200 ] &&
+               [ "$js_code" = 200 ]; then
               ok=true
               break
             fi
             sleep 10
           done
           echo "http_code=$code" >> "$GITHUB_OUTPUT"
+          echo "css_code=$css_code" >> "$GITHUB_OUTPUT"
+          echo "js_code=$js_code" >> "$GITHUB_OUTPUT"
+          echo "expected_revision=$expected" >> "$GITHUB_OUTPUT"
           echo "verified=$ok" >> "$GITHUB_OUTPUT"
           test "$ok" = true
-      - name: Publish live verification receipt
+      - name: Publish exact live verification receipt
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
           HTTP_CODE: ${{ steps.verify.outputs.http_code }}
+          CSS_CODE: ${{ steps.verify.outputs.css_code }}
+          JS_CODE: ${{ steps.verify.outputs.js_code }}
+          EXPECTED_REVISION: ${{ steps.verify.outputs.expected_revision }}
           VERIFIED: ${{ steps.verify.outputs.verified }}
         shell: bash
         run: |
           set -euo pipefail
           body=$(cat <<EOF
-          Encrypted Milan Pages live verification
+          Encrypted Milan Pages exact live verification
 
           - url: https://alanua.github.io/Travel/milan-2026/
           - http_code: ${HTTP_CODE:-unknown}
-          - loader_verified: ${VERIFIED:-false}
+          - enhance_css_code: ${CSS_CODE:-unknown}
+          - enhance_js_code: ${JS_CODE:-unknown}
+          - expected_revision: ${EXPECTED_REVISION:-unknown}
+          - exact_revision_verified: ${VERIFIED:-false}
           - plaintext_itinerary_published: false
           - fragment_key_published: false
           EOF
