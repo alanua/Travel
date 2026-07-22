@@ -29,15 +29,25 @@ jobs:
       - name: Build, upload and deploy encrypted Milan page
         shell: bash
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
           repo="$GITHUB_REPOSITORY"
+          stage=initialize
+          fail_receipt() {
+            rc=$?
+            gh issue comment 14 --repo "$repo" --body "Milan Pages publication failed\n\n- stage: ${stage}\n- exit_code: ${rc}\n- private_values_exposed: false" || true
+            exit "$rc"
+          }
+          trap fail_receipt ERR
+
           work="$RUNNER_TEMP/travel-main"
           site="$RUNNER_TEMP/site"
           artifact="$RUNNER_TEMP/artifact.tar"
 
+          stage=clone_travel
           git clone --depth=1 --branch main "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$work"
           cd "$work"
 
+          stage=validate_source
           test -f milan-2026/index.html
           test -f milan-2026/payload-08.txt
           test -f milan-2026/enhance.css
@@ -56,15 +66,19 @@ jobs:
           PY
           )
 
+          stage=archive_site
           rm -rf "$site"
           mkdir -p "$site/milan-2026"
           cp milan-2026/index.html milan-2026/payload-*.txt milan-2026/enhance.css milan-2026/enhance.js "$site/milan-2026/"
           touch "$site/.nojekyll"
           tar --dereference --hard-dereference --directory "$site" -cvf "$artifact" --exclude=.git --exclude=.github .
 
+          stage=clone_upload_action
           git clone --depth=1 --branch v4 https://github.com/actions/upload-artifact.git "$RUNNER_TEMP/upload-artifact"
+          stage=clone_deploy_action
           git clone --depth=1 --branch v4 https://github.com/actions/deploy-pages.git "$RUNNER_TEMP/deploy-pages"
 
+          stage=upload_artifact
           env \
             "INPUT_NAME=github-pages" \
             "INPUT_PATH=$artifact" \
@@ -75,6 +89,7 @@ jobs:
             "INPUT_INCLUDE-HIDDEN-FILES=false" \
             node "$RUNNER_TEMP/upload-artifact/dist/upload/index.js"
 
+          stage=deploy_pages
           env \
             "INPUT_TOKEN=$GH_TOKEN" \
             "INPUT_TIMEOUT=600000" \
@@ -84,6 +99,7 @@ jobs:
             "INPUT_PREVIEW=false" \
             node "$RUNNER_TEMP/deploy-pages/dist/index.js"
 
+          stage=verify_live
           url='https://alanua.github.io/Travel/milan-2026/'
           verified=false
           http_code=000
@@ -105,6 +121,7 @@ jobs:
           done
           test "$verified" = true
 
+          stage=publish_receipt
           body=$(cat <<EOF
           Encrypted Milan Pages exact live verification
 
@@ -119,3 +136,4 @@ jobs:
           EOF
           )
           gh issue comment 14 --repo "$repo" --body "$body"
+          trap - ERR
