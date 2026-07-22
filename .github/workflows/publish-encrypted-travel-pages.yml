@@ -7,13 +7,10 @@ on:
       - 'milan-2026/**'
       - '.github/workflows/publish-encrypted-travel-pages.yml'
   workflow_dispatch:
-  pull_request_target:
-    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
   pages: write
-  id-token: write
   issues: write
 
 concurrency:
@@ -21,151 +18,95 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    if: >-
-      github.event_name != 'pull_request_target' ||
-      (github.event.pull_request.user.login == 'alanua' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.head.ref == 'ops/publish-milan-now' &&
-       github.event.pull_request.base.ref == 'main')
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Build bounded encrypted site artifact
-        id: build
+      - name: Publish and verify encrypted Milan page without external actions
         shell: bash
         run: |
           set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          work="$RUNNER_TEMP/travel-main"
+          git clone --depth=1 --branch main "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$work"
+          cd "$work"
+
           test -f milan-2026/index.html
           test -f milan-2026/payload-08.txt
           test -f milan-2026/enhance.css
           test -f milan-2026/enhance.js
-          rm -rf _site
-          mkdir -p _site/milan-2026
-          cp milan-2026/index.html milan-2026/payload-*.txt milan-2026/enhance.css milan-2026/enhance.js _site/milan-2026/
-          touch _site/.nojekyll
-          find _site -type f -exec chmod 0644 {} +
-          test "$(find _site/milan-2026 -maxdepth 1 -type f | wc -l)" -eq 13
-          ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' _site
-      - name: Configure and enable Pages
-        id: configure
-        continue-on-error: true
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - name: Upload encrypted site artifact
-        id: upload
-        if: steps.configure.outcome == 'success'
-        continue-on-error: true
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - name: Deploy
-        id: deployment
-        if: steps.configure.outcome == 'success' && steps.upload.outcome == 'success'
-        continue-on-error: true
-        uses: actions/deploy-pages@v4
-      - name: Publish public-safe deployment receipt
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CONFIGURE_OUTCOME: ${{ steps.configure.outcome }}
-          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
-          DEPLOY_OUTCOME: ${{ steps.deployment.outcome }}
-          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          body=$(cat <<EOF
-          Encrypted Milan Pages deployment receipt
+          test "$(find milan-2026 -maxdepth 1 -type f | wc -l)" -eq 13
+          ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' milan-2026
 
-          - configure: ${CONFIGURE_OUTCOME:-not_run}
-          - upload: ${UPLOAD_OUTCOME:-not_run}
-          - deploy: ${DEPLOY_OUTCOME:-not_run}
-          - page_url: ${PAGE_URL:-not_available}
-          - encrypted_payload_parts: 10
-          - public_enhancement_assets: 2
-          - plaintext_itinerary_published: false
-          - fragment_key_published: false
-          EOF
-          )
-          gh issue comment 14 --repo alanua/Travel --body "$body"
-          test "${DEPLOY_OUTCOME:-}" = "success"
-
-  verify-live:
-    needs: deploy
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
-    steps:
-      - uses: actions/checkout@v4
-      - name: Verify exact published revision over HTTPS
-        id: verify
-        shell: bash
-        run: |
-          set -euo pipefail
-          url='https://alanua.github.io/Travel/milan-2026/'
           expected=$(python3 - <<'PY'
           import re
           from pathlib import Path
-          text = Path("milan-2026/index.html").read_text(encoding="utf-8")
+          text = Path('milan-2026/index.html').read_text(encoding='utf-8')
           match = re.search(r'data-skeleton-page-revision="([a-f0-9]{64})"', text)
           if not match:
-              raise SystemExit("missing_revision_marker")
+              raise SystemExit('missing_revision_marker')
           print(match.group(1))
           PY
           )
-          ok=false
-          code=000
+          main_sha=$(git rev-parse HEAD)
+
+          printf '%s' '{"build_type":"legacy","source":{"branch":"main","path":"/"}}' |
+            gh api --method PUT "repos/${repo}/pages" --input - >/dev/null
+          gh api --method POST "repos/${repo}/pages/builds" >/dev/null
+
+          built=false
+          build_status=unknown
+          build_commit=unknown
+          for attempt in $(seq 1 40); do
+            latest=$(gh api "repos/${repo}/pages/builds/latest")
+            build_status=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("status","unknown"))' <<<"$latest")
+            build_commit=$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("commit","unknown"))' <<<"$latest")
+            if [ "$build_status" = built ] && [ "$build_commit" = "$main_sha" ]; then
+              built=true
+              break
+            fi
+            if [ "$build_status" = errored ]; then
+              break
+            fi
+            sleep 5
+          done
+          test "$built" = true
+
+          url='https://alanua.github.io/Travel/milan-2026/'
+          verified=false
+          http_code=000
           css_code=000
           js_code=000
           for attempt in $(seq 1 30); do
-            code=$(curl -L -sS -o /tmp/milan-loader.html -w '%{http_code}' --connect-timeout 10 --max-time 20 "$url" || true)
+            http_code=$(curl -L -sS -o /tmp/milan-loader.html -w '%{http_code}' --connect-timeout 10 --max-time 20 "$url" || true)
             css_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "${url}enhance.css?v=${expected:0:12}" || true)
             js_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "${url}enhance.js?v=${expected:0:12}" || true)
-            if [ "$code" = 200 ] &&
+            if [ "$http_code" = 200 ] &&
                grep -q "data-skeleton-page-revision=\"$expected\"" /tmp/milan-loader.html &&
                grep -q 'payload-08.txt' /tmp/milan-loader.html &&
                [ "$css_code" = 200 ] &&
                [ "$js_code" = 200 ]; then
-              ok=true
+              verified=true
               break
             fi
-            sleep 10
+            sleep 5
           done
-          echo "http_code=$code" >> "$GITHUB_OUTPUT"
-          echo "css_code=$css_code" >> "$GITHUB_OUTPUT"
-          echo "js_code=$js_code" >> "$GITHUB_OUTPUT"
-          echo "expected_revision=$expected" >> "$GITHUB_OUTPUT"
-          echo "verified=$ok" >> "$GITHUB_OUTPUT"
-          test "$ok" = true
-      - name: Publish exact live verification receipt
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HTTP_CODE: ${{ steps.verify.outputs.http_code }}
-          CSS_CODE: ${{ steps.verify.outputs.css_code }}
-          JS_CODE: ${{ steps.verify.outputs.js_code }}
-          EXPECTED_REVISION: ${{ steps.verify.outputs.expected_revision }}
-          VERIFIED: ${{ steps.verify.outputs.verified }}
-        shell: bash
-        run: |
-          set -euo pipefail
+          test "$verified" = true
+
           body=$(cat <<EOF
           Encrypted Milan Pages exact live verification
 
-          - url: https://alanua.github.io/Travel/milan-2026/
-          - http_code: ${HTTP_CODE:-unknown}
-          - enhance_css_code: ${CSS_CODE:-unknown}
-          - enhance_js_code: ${JS_CODE:-unknown}
-          - expected_revision: ${EXPECTED_REVISION:-unknown}
-          - exact_revision_verified: ${VERIFIED:-false}
+          - http_code: $http_code
+          - enhance_css_code: $css_code
+          - enhance_js_code: $js_code
+          - expected_revision: $expected
+          - exact_revision_verified: true
+          - pages_build_status: $build_status
+          - pages_build_matches_main: true
           - plaintext_itinerary_published: false
           - fragment_key_published: false
           EOF
           )
-          gh issue comment 14 --repo alanua/Travel --body "$body"
-          test "${VERIFIED:-false}" = true
+          gh issue comment 14 --repo "$repo" --body "$body"
