@@ -1,0 +1,17 @@
+name: Publish Pages artifact locally
+description: Upload one prepared GitHub Pages artifact and deploy it through the Pages API.
+inputs:
+  token:
+    required: true
+    description: GitHub workflow token
+  artifact-path:
+    required: true
+    description: Absolute path to artifact.tar
+outputs:
+  deployment-id:
+    description: Pages deployment identifier
+  page-url:
+    description: Published Pages URL
+runs:
+  using: node20
+  main: index.js
