@@ -52,7 +52,6 @@ jobs:
           test -f milan-2026/payload-08.txt
           test -f milan-2026/enhance.css
           test -f milan-2026/enhance.js
-          test "$(find milan-2026 -maxdepth 1 -type f | wc -l)" -eq 13
           ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' milan-2026
 
           expected=$(python3 - <<'PY'
@@ -70,6 +69,7 @@ jobs:
           rm -rf "$site"
           mkdir -p "$site/milan-2026"
           cp milan-2026/index.html milan-2026/payload-*.txt milan-2026/enhance.css milan-2026/enhance.js "$site/milan-2026/"
+          test "$(find "$site/milan-2026" -maxdepth 1 -type f | wc -l)" -eq 13
           touch "$site/.nojekyll"
           tar --dereference --hard-dereference --directory "$site" -cvf "$artifact" --exclude=.git --exclude=.github .
 
