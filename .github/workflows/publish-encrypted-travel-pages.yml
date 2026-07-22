@@ -54,8 +54,6 @@ jobs:
           )
           main_sha=$(git rev-parse HEAD)
 
-          printf '%s' '{"build_type":"legacy","source":{"branch":"main","path":"/"}}' |
-            gh api --method PUT "repos/${repo}/pages" --input - >/dev/null
           gh api --method POST "repos/${repo}/pages/builds" >/dev/null
 
           built=false
