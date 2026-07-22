@@ -7,8 +7,8 @@ on:
       - 'milan-2026/**'
       - '.github/workflows/publish-encrypted-travel-pages.yml'
   workflow_dispatch:
-  issue_comment:
-    types: [created]
+  pull_request_target:
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
@@ -23,10 +23,11 @@ concurrency:
 jobs:
   deploy:
     if: >-
-      github.event_name != 'issue_comment' ||
-      (github.event.issue.number == 14 &&
-       github.event.comment.user.login == 'alanua' &&
-       github.event.comment.body == '/publish-milan-private-page')
+      github.event_name != 'pull_request_target' ||
+      (github.event.pull_request.user.login == 'alanua' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'ops/publish-milan-now' &&
+       github.event.pull_request.base.ref == 'main')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
