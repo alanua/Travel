@@ -1,5 +1,6 @@
 'use strict'
 
+const path = require('node:path')
 const core = require('@actions/core')
 const github = require('@actions/github')
 const {DefaultArtifactClient} = require('@actions/artifact')
@@ -16,6 +17,7 @@ async function run() {
   const uploaded = await artifactClient.uploadArtifact(
     'github-pages',
     [artifactPath],
+    path.dirname(artifactPath),
     {retentionDays: 1}
   )
   if (!uploaded || !uploaded.id) throw new Error('artifact_upload_missing_id')
