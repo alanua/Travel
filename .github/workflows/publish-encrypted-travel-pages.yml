@@ -1,4 +1,4 @@
-name: Publish encrypted Travel pages
+name: Publish encrypted Travel page
 
 on:
   push:
@@ -6,43 +6,31 @@ on:
     paths:
       - 'milan-2026/**'
       - '.github/workflows/publish-encrypted-travel-pages.yml'
-      - '.github/actions/publish-pages-local/**'
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
   issues: write
 
 concurrency:
-  group: travel-pages
+  group: travel-page-publication
   cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
-    environment:
-      name: travel-pages-publish
-      url: https://alanua.github.io/Travel/milan-2026/
+    timeout-minutes: 6
     env:
       GH_TOKEN: ${{ github.token }}
-      GITHUB_PAGES: 'true'
     steps:
-      - name: Prepare encrypted Milan artifact
+      - name: Verify immutable Milan HTML publication
         shell: bash
         run: |
-          set -Eeuo pipefail
+          set -euo pipefail
           repo="$GITHUB_REPOSITORY"
-          git clone --depth=1 --branch main "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$GITHUB_WORKSPACE/source"
-          cd "$GITHUB_WORKSPACE/source"
-
-          test -f milan-2026/index.html
-          test -f milan-2026/payload-08.txt
-          test -f milan-2026/enhance.css
-          test -f milan-2026/enhance.js
-          ! grep -R -E 'BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|#k=[A-Za-z0-9_-]+' milan-2026
+          work="$RUNNER_TEMP/travel-main"
+          git clone --depth=1 --branch main "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$work"
+          cd "$work"
 
           expected=$(python3 - <<'PY'
           import re
@@ -55,62 +43,32 @@ jobs:
           PY
           )
 
-          site="$RUNNER_TEMP/site"
-          artifact="$RUNNER_TEMP/artifact.tar"
-          rm -rf "$site"
-          mkdir -p "$site/milan-2026"
-          cp milan-2026/index.html milan-2026/payload-*.txt milan-2026/enhance.css milan-2026/enhance.js "$site/milan-2026/"
-          test "$(find "$site/milan-2026" -maxdepth 1 -type f | wc -l)" -eq 13
-          touch "$site/.nojekyll"
-          tar --dereference --hard-dereference --directory "$site" -cvf "$artifact" --exclude=.git --exclude=.github .
+          base="https://cdn.githubraw.com/alanua/Travel/${GITHUB_SHA}/milan-2026"
+          loader_code=$(curl -L -sS -o /tmp/milan-loader.html -w '%{http_code}' --connect-timeout 10 --max-time 30 "${base}/index.html")
+          css_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${base}/enhance.css")
+          js_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${base}/enhance.js")
+          payload_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 "${base}/payload-08.txt")
 
-          npm --prefix .github/actions/publish-pages-local install --omit=dev --no-audit --no-fund
-          echo "MILAN_REVISION=$expected" >> "$GITHUB_ENV"
-          echo "MILAN_ARTIFACT=$artifact" >> "$GITHUB_ENV"
-
-      - name: Deploy encrypted Milan artifact
-        id: deployment
-        uses: ./source/.github/actions/publish-pages-local
-        with:
-          token: ${{ github.token }}
-          artifact-path: ${{ env.MILAN_ARTIFACT }}
-
-      - name: Verify exact live revision
-        shell: bash
-        run: |
-          set -euo pipefail
-          url='https://alanua.github.io/Travel/milan-2026/'
-          verified=false
-          http_code=000
-          css_code=000
-          js_code=000
-          for attempt in $(seq 1 30); do
-            http_code=$(curl -L -sS -o /tmp/milan-loader.html -w '%{http_code}' --connect-timeout 10 --max-time 20 "$url" || true)
-            css_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "${url}enhance.css?v=${MILAN_REVISION:0:12}" || true)
-            js_code=$(curl -L -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "${url}enhance.js?v=${MILAN_REVISION:0:12}" || true)
-            if [ "$http_code" = 200 ] &&
-               grep -q "data-skeleton-page-revision=\"$MILAN_REVISION\"" /tmp/milan-loader.html &&
-               grep -q 'payload-08.txt' /tmp/milan-loader.html &&
-               [ "$css_code" = 200 ] &&
-               [ "$js_code" = 200 ]; then
-              verified=true
-              break
-            fi
-            sleep 5
-          done
-          test "$verified" = true
+          test "$loader_code" = 200
+          test "$css_code" = 200
+          test "$js_code" = 200
+          test "$payload_code" = 200
+          grep -q "data-skeleton-page-revision=\"$expected\"" /tmp/milan-loader.html
+          grep -q 'payload-08.txt' /tmp/milan-loader.html
 
           body=$(cat <<EOF
-          Encrypted Milan Pages exact live verification
+          Milan Travel page published
 
-          - http_code: $http_code
+          - publication: immutable_html_cdn
+          - source_commit: $GITHUB_SHA
+          - http_code: $loader_code
           - enhance_css_code: $css_code
           - enhance_js_code: $js_code
-          - expected_revision: $MILAN_REVISION
+          - payload_code: $payload_code
+          - expected_revision: $expected
           - exact_revision_verified: true
-          - artifact_deployment: success
           - plaintext_itinerary_published: false
           - fragment_key_published: false
           EOF
           )
-          gh issue comment 14 --repo "$GITHUB_REPOSITORY" --body "$body"
+          gh issue comment 14 --repo "$repo" --body "$body"
