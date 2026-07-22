@@ -22,9 +22,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    environment:
-      name: github-pages
-      url: https://alanua.github.io/Travel/milan-2026/
     env:
       GH_TOKEN: ${{ github.token }}
       GITHUB_PAGES: 'true'
