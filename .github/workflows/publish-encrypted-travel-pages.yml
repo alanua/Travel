@@ -7,6 +7,8 @@ on:
       - 'milan-2026/**'
       - '.github/workflows/publish-encrypted-travel-pages.yml'
   workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
 
 permissions:
   contents: read
