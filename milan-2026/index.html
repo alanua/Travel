@@ -1,6 +1,6 @@
 <!doctype html>
-<!-- Milan canonical mobile layout publication 2026-07-22 -->
-<html lang="uk" data-skeleton-page-revision="bc5a3995485d67c219b17985f2da8c16911f98308730b0b5adad805c0a806bd0" data-skeleton-page-profile="github_pages_encrypted_v1" data-skeleton-page-adoption="legacy-aes-gcm-v1" data-skeleton-page-release="milan-mobile-canonical-v3">
+<!-- Milan canonical Claude Travel design publication 2026-07-22 -->
+<html lang="uk" data-skeleton-page-revision="81686f8e7c2242f38596c04eb4cc9ebae6d63c45496302ed7efc515add8c1fa0" data-skeleton-page-profile="github_pages_encrypted_v1" data-skeleton-page-adoption="legacy-aes-gcm-v1" data-skeleton-page-release="milan-claude-template-v4">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -28,7 +28,8 @@
   </main>
   <script>
   (()=>{'use strict';
-    const revision='bc5a3995485d67c219b17985f2da8c16911f98308730b0b5adad805c0a806bd0';
+    const revision='81686f8e7c2242f38596c04eb4cc9ebae6d63c45496302ed7efc515add8c1fa0';
+    const templateCommit='122d0e87e21adae12e6ed96b1ac874aa2f8926e9';
     const files=["payload-00.txt","payload-01.txt","payload-02.txt","payload-03.txt","payload-04.txt","payload-05.txt","payload-06.txt","payload-07.txt","payload-07-tail.txt","payload-08.txt"];
     const nonce='KhpaUZ-fKTaxC2bA';
     const aad=new TextEncoder().encode('travel:milan-2026:v1');
@@ -49,8 +50,9 @@
       const viewport='<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">';
       if(/<meta[^>]+name=["']viewport["'][^>]*>/i.test(page))page=page.replace(/<meta[^>]+name=["']viewport["'][^>]*>/i,viewport);
       else page=page.replace(/<head([^>]*)>/i,'<head$1>'+viewport);
+      const canonical='https://cdn.githubraw.com/alanua/Travel/'+templateCommit+'/web/trip-page/styles.css';
       const safety='<style id="milan-mobile-safety">html,body{width:100%;max-width:100%;overflow-x:hidden}img{max-width:100%}@media(max-width:820px){.layout,.page-grid{grid-template-columns:1fr!important}.booking-card{display:none!important}}@media(max-width:640px){main,.shell,.layout,.page-grid,.content-column,.section-block,.card,.milan-gallery-block{min-width:0!important;max-width:100%!important}.hero-gallery{width:calc(100% - 16px)!important;height:350px!important;min-height:0!important}.milan-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.milan-gallery-card{aspect-ratio:4/3!important}.milan-gallery-card img,.hero-photo img,.day-image img,.stay-media img,.activity-media img,.highlight img{width:100%!important;height:100%!important;object-fit:cover!important}}</style>';
-      page=page.replace('</head>','<link rel="stylesheet" href="enhance.css?v='+revision.slice(0,12)+'">'+safety+'</head>');
+      page=page.replace('</head>','<link rel="stylesheet" href="'+canonical+'"><link rel="stylesheet" href="enhance.css?v='+revision.slice(0,12)+'">'+safety+'</head>');
       page=page.replace('</body>','<script src="enhance.js?v='+revision.slice(0,12)+'"><\/script></body>');
       history.replaceState(null,'','#'+date);
       document.open();document.write(page);document.close();
