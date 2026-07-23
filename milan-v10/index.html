@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="uk" data-build="milan-v10">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#ffffff">
+<title>Мілан — план подорожі</title>
+<style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#fff;color:#1f2937;font:16px Inter,system-ui,sans-serif}main{width:min(88vw,420px);padding:28px;border:1px solid #e5e7eb;border-radius:16px}.bar{height:7px;margin-top:20px;border-radius:99px;background:#e5e7eb;overflow:hidden}.bar:after{content:"";display:block;width:42%;height:100%;background:#2563eb;animation:a 1s infinite alternate}@keyframes a{to{transform:translateX(138%)}}</style>
+</head>
+<body><main><strong>Відкриваю план Мілана…</strong><div class="bar"></div></main>
+<script>
+(()=>{'use strict';
+const raw=location.hash.slice(1),variant=raw.slice(0,1),token=raw.slice(1);
+const dates={'1':'2026-09-24','2':'2026-10-08','3':'2026-10-15'};
+const parts=['../milan-v9/p0.txt','../milan-v9/p1.txt','../milan-v9/p2.txt','../milan-v9/p3.txt'];
+const aad=new TextEncoder().encode('travel:milan-2026:m9');
+const nonce='YBmgLS8yqVkvWjnU';
+const dec=s=>{s=s.replace(/\s/g,'').replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);const r=atob(s);return Uint8Array.from(r,c=>c.charCodeAt(0));};
+const mobilePatch=`
+<style id="mobile-v10-patch">
+html{width:100%!important;max-width:100%!important;overflow-x:hidden!important;-webkit-text-size-adjust:100%!important}
+body{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important;margin:0!important}
+body>header,body>section,body>main,body>footer{width:100%!important;max-width:100%!important;min-width:0!important}
+#route-map{width:100%!important;max-width:100%!important;min-width:0!important}
+.leaflet-container{width:100%!important;max-width:100%!important;touch-action:pan-x pan-y!important}
+@media(max-width:767px){
+  body{font-size:16px!important}
+  body>section{min-width:0!important}
+  main{width:100%!important;max-width:100%!important;padding-left:16px!important;padding-right:16px!important}
+  #route-map{height:300px!important;min-width:0!important}
+  .day-card{grid-template-columns:1fr!important;width:100%!important;min-width:0!important}
+  .day-card img{width:100%!important;height:220px!important;min-height:220px!important;object-fit:cover!important}
+}
+</style>`;
+const clean=page=>{
+ page=page.replace(/<meta\s+name=["']viewport["'][^>]*>/i,'<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">');
+ page=page.replace(/<span[^>]*>\s*Гортай[^<]*<\/span>/gi,'');
+ page=page.replace(/<span[^>]*>\s*Мапу можна гортати\s*<\/span>/gi,'');
+ page=page.replace(/<[^>]+>\s*Гортай ліворуч[^<]*<\/[^>]+>/gi,'');
+ page=page.replace(/<[^>]+>\s*Мапу можна гортати\s*<\/[^>]+>/gi,'');
+ page=page.replace(/Гортай ліворуч\s*↔?\s*праворуч/gi,'');
+ page=page.replace(/Мапу можна гортати/gi,'');
+ return page.replace('</head>',mobilePatch+'</head>');
+};
+(async()=>{try{
+ if(!dates[variant]||token.length<10)throw new Error('bad link');
+ const keyBytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));
+ const key=await crypto.subtle.importKey('raw',keyBytes,'AES-GCM',false,['decrypt']);
+ const encoded=(await Promise.all(parts.map(f=>fetch(f,{cache:'no-store',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error(f);return r.text();})))).join('');
+ const compressed=await crypto.subtle.decrypt({name:'AES-GCM',iv:dec(nonce),additionalData:aad,tagLength:128},key,dec(encoded));
+ let page=await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+ if(!page.startsWith('<!DOCTYPE html>'))throw new Error('bad page');
+ page=clean(page);
+ history.replaceState(null,'','#date='+dates[variant]);
+ document.open();document.write(page);document.close();
+ }catch(e){console.error(e);document.body.innerHTML='<main><strong>Посилання недійсне.</strong></main>';}
+})();
+})();
+</script>
+</body></html>
