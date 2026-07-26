@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="uk">
+<html lang="uk" data-travel-template="editorial-journey-v2">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -8,58 +8,133 @@
   <meta name="theme-color" content="#ffffff">
   <title>Приватна сторінка подорожі</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{primary:"#0f766e",accent:"#f59e0b",dark:"#17202a"},fontFamily:{sans:["Inter","system-ui","sans-serif"]}}}}</script>
+  <script>tailwind.config={theme:{extend:{colors:{primary:"#007f86",accent:"#f2cf00",ink:"#111111",paper:"#f7f6f2"},fontFamily:{sans:["Inter","system-ui","sans-serif"]}}}}</script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{overflow-x:hidden}
-    .hero-overlay{background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.18) 62%,rgba(0,0,0,.3))}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,.8fr);grid-template-rows:1fr 1fr;gap:8px;height:min(64vw,620px);min-height:430px}
+    .hero-grid .hero-main{grid-row:1/3}.hero-grid img{transition:transform .55s ease}.hero-grid figure:hover img{transform:scale(1.025)}
+    .route-shell{width:100%;max-width:100%;overflow:hidden}.route-map{height:420px;width:100%;max-width:100%;background:#e5e7eb}
+    .leaflet-container{font-family:Inter,system-ui,sans-serif}.leaflet-tile-pane{filter:grayscale(.72) saturate(.62) contrast(.95)}
+    .route-dot{width:20px;height:20px;border-radius:999px;background:#007f86;border:4px solid #fff;box-shadow:0 2px 8px #0006}
+    .route-label{background:#fff;border:1px solid #d1d5db;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 2px 8px #0002}
     .scroll-row{scrollbar-width:none}.scroll-row::-webkit-scrollbar{display:none}
-    .photo-card{flex:0 0 min(82vw,320px)}.stay-card{flex:0 0 min(78vw,285px)}
-    #route-map{height:320px;width:100%;max-width:100%;background:#e5e7eb}
-    .leaflet-container{font-family:Inter,system-ui,sans-serif}
-    .leaflet-tile-pane{filter:grayscale(.8) saturate(.45) contrast(.95)}
-    .route-dot{width:18px;height:18px;border-radius:999px;background:#0f766e;border:4px solid #fff;box-shadow:0 2px 8px #0006}
-    .route-label{background:#fff;border:1px solid #d1d5db;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700;white-space:nowrap}
-    @media(max-width:767px){#route-map{height:290px}}
+    .place-card{scroll-snap-align:start;flex:0 0 min(84vw,360px)}.stay-card{scroll-snap-align:start;flex:0 0 min(80vw,310px)}
+    .section-rule{border-top:1px solid #d9d9d4}
+    @media(max-width:767px){.hero-grid{grid-template-columns:1fr 1fr;grid-template-rows:minmax(255px,56vw) 150px;height:auto;min-height:0}.hero-grid .hero-main{grid-column:1/3;grid-row:1}.route-map{height:330px}.leaflet-tooltip.route-label{display:none}}
   </style>
 </head>
-<body class="bg-gray-50 pb-24 text-gray-800 antialiased lg:pb-0">
+<body class="bg-white pb-24 text-ink antialiased lg:pb-0">
   <div id="gate" class="grid min-h-screen place-items-center bg-white p-6">
-    <div class="w-full max-w-md rounded-2xl border border-gray-200 p-8 shadow-sm">
-      <div class="grid h-12 w-12 place-items-center rounded-xl bg-primary font-extrabold text-white">T</div>
-      <h1 class="mt-5 text-2xl font-extrabold text-dark">Приватна сторінка подорожі</h1>
+    <div class="w-full max-w-md border border-black/10 bg-white p-8 shadow-sm">
+      <div class="grid h-12 w-12 place-items-center bg-primary font-black text-white">T</div>
+      <h1 class="mt-5 text-2xl font-black">Приватна сторінка подорожі</h1>
       <p id="gate-status" class="mt-2 text-gray-500">Відкриваю сімейний план…</p>
-      <div class="mt-6 h-2 overflow-hidden rounded-full bg-gray-100"><div class="h-full w-2/5 animate-pulse rounded-full bg-primary"></div></div>
+      <div class="mt-6 h-2 overflow-hidden bg-gray-100"><div class="h-full w-2/5 animate-pulse bg-primary"></div></div>
     </div>
   </div>
   <div id="app" hidden></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
   (()=>{"use strict";
-    const revision="2026-07-26.6",payloadFile="payload.txt",nonce="YCkXvFgIVd7xYhla",aad="travel:calendar-trips-2026:v1";
+    const revision="2026-07-26.7",payloadFile="payload.txt",nonce="YCkXvFgIVd7xYhla",aad="travel:calendar-trips-2026:v1";
     const dec=s=>{s=s.replace(/\s/g,"").replace(/-/g,"+").replace(/_/g,"/");s+="=".repeat((4-s.length%4)%4);return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
     const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const safe=u=>{try{const x=new URL(u,location.href);return ["https:","http:"].includes(x.protocol)?x.href:"#"}catch{return"#"}};
-    const photo=(url,alt="")=>`<img src="${esc(safe(url))}" alt="${esc(alt)}" class="h-full w-full object-cover" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+    const photo=(url,alt="",classes="")=>`<img src="${esc(safe(url))}" alt="${esc(alt)}" class="h-full w-full object-cover ${classes}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+    const unique=xs=>[...new Set(xs.filter(Boolean))];
+    const validCoords=x=>Array.isArray(x)&&x.length===2&&x.every(Number.isFinite)&&Math.abs(x[0])<=90&&Math.abs(x[1])<=180;
+    const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+    function heroGallery(t){
+      const images=unique([...(t.photos||[]),...(t.days||[]).map(d=>d.image)]).slice(0,3);
+      if(!images.length)return `<div class="grid min-h-[360px] place-items-center bg-gray-100 text-sm font-bold text-gray-500">Фотографії готуються</div>`;
+      if(images.length===1)return `<div class="h-[52vw] min-h-[390px] max-h-[650px] overflow-hidden">${photo(images[0],t.title,"!block")}</div>`;
+      const second=images[1]||images[0],third=images[2]||second;
+      return `<div class="hero-grid"><figure class="hero-main overflow-hidden bg-gray-100">${photo(images[0],t.title,"!block")}</figure><figure class="overflow-hidden bg-gray-100">${photo(second,(t.days||[])[1]?.title||t.title,"!block")}</figure><figure class="overflow-hidden bg-gray-100">${photo(third,(t.days||[])[2]?.title||t.title,"!block")}</figure></div>`;
+    }
+
+    function routeNames(t){
+      const route=unique((t.route||[]).map(String));
+      if(route.length>1)return route;
+      const places=unique((t.days||[]).map(d=>d.title));
+      return places.length?places:route;
+    }
+
+    async function geocodeName(name){
+      const cacheKey=`travel-geocode-v1:${name.toLowerCase()}`;
+      try{const cached=JSON.parse(localStorage.getItem(cacheKey)||"null");if(cached&&validCoords(cached.coords))return cached}catch{}
+      const endpoint="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=0&q="+encodeURIComponent(name);
+      const response=await fetch(endpoint,{headers:{"Accept-Language":"uk,de,en"},referrerPolicy:"strict-origin-when-cross-origin"});
+      if(!response.ok)throw new Error("geocode");
+      const hit=(await response.json())[0];
+      if(!hit)throw new Error("not-found");
+      const result={name,coords:[Number(hit.lat),Number(hit.lon)]};
+      if(!validCoords(result.coords))throw new Error("coordinates");
+      try{localStorage.setItem(cacheKey,JSON.stringify(result))}catch{}
+      return result;
+    }
+
+    async function resolvePoints(t){
+      const supplied=(t.points||[]).map(p=>({name:String(p.name||""),coords:p.coords})).filter(p=>p.name&&validCoords(p.coords));
+      if(supplied.length)return supplied;
+      const names=routeNames(t).slice(0,8),points=[];
+      for(const name of names){
+        try{points.push(await geocodeName(name))}catch{}
+        if(names.length>1)await sleep(1050);
+      }
+      return points;
+    }
+
+    async function drawMap(t){
+      const target=document.getElementById("route-map"),status=document.getElementById("map-status");
+      if(!target)return;
+      const selected=t.route_selected!==false;
+      if(!selected){status.textContent="Маршрут ще не обрано — показуємо лише кандидати без вигаданої лінії.";return}
+      try{
+        const points=await resolvePoints(t);
+        if(!points.length)throw new Error("no-points");
+        status.textContent="";
+        const map=L.map(target,{scrollWheelZoom:false,zoomControl:true});
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap"}).addTo(map);
+        const latlngs=points.map(p=>p.coords);
+        if(latlngs.length>1)L.polyline(latlngs,{color:"#007f86",weight:4,opacity:.92}).addTo(map);
+        points.forEach((p,i)=>L.marker(p.coords,{icon:L.divIcon({className:"",html:'<div class="route-dot"></div>',iconSize:[20,20],iconAnchor:[10,10]})}).addTo(map).bindTooltip(`${i+1}. ${esc(p.name)}`,{permanent:true,direction:i%2?"right":"left",className:"route-label"}));
+        if(latlngs.length===1)map.setView(latlngs[0],13);else map.fitBounds(L.latLngBounds(latlngs).pad(.16));
+        setTimeout(()=>map.invalidateSize(),120);
+      }catch{
+        target.innerHTML='<div class="grid h-full place-items-center bg-gray-100 p-6 text-center text-sm font-bold text-gray-500">Мапу не вдалося завантажити. Точний маршрут відкривається кнопкою нижче.</div>';
+        status.textContent="";
+      }
+    }
+
     function render(t){
       document.title=`${t.title} | Private Travel`;
-      const gallerySection="";
-      const days=t.days.map((d,i)=>{const image=d.image?`<div class="h-52 md:h-full">${photo(d.image,d.title)}</div>`:"";return `<article class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm${image?" md:grid md:grid-cols-[260px_1fr]":""}">${image}<div class="p-5 lg:p-6"><span class="text-xs font-bold uppercase tracking-wider text-primary">Місце ${i+1}</span><h3 class="mt-2 text-xl font-extrabold text-dark">${esc(d.title)}</h3><p class="mt-3 text-sm leading-relaxed text-gray-600">${esc(d.text)}</p><a class="mt-5 inline-flex text-sm font-bold text-primary hover:underline" target="_blank" rel="noopener noreferrer" href="${esc(safe(d.map))}">Відкрити точне місце в Google Maps ↗</a></div></article>`}).join("");
-      const stays=t.stays.map(s=>`<article class="stay-card overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"><div class="p-4"><span class="text-xs font-bold uppercase text-primary">${esc(s.label)}</span><h3 class="mt-1 font-extrabold">${esc(s.title)}</h3><p class="mt-2 text-sm text-gray-500">${esc(s.text)}</p></div></article>`).join("");
-      const checks=t.checks.map((x,i)=>`<details class="py-4"${i===0?" open":""}><summary class="cursor-pointer font-bold">${esc(x.title)}</summary><p class="pt-3 text-sm leading-relaxed text-gray-600">${esc(x.text)}</p></details>`).join("");
+      const selected=t.route_selected!==false;
+      const places=(t.days||[]).map((d,i)=>`<article class="place-card overflow-hidden border border-black/10 bg-white"><div class="aspect-[4/3] bg-gray-100">${d.image?photo(d.image,d.title,"!block"):""}</div><div class="p-5"><span class="text-xs font-black uppercase tracking-[.16em] text-primary">Місце ${i+1}</span><h3 class="mt-2 text-xl font-black">${esc(d.title)}</h3><p class="mt-3 text-sm leading-relaxed text-gray-600">${esc(d.text)}</p><a class="mt-5 inline-flex border-b-2 border-accent pb-1 text-sm font-black" target="_blank" rel="noopener noreferrer" href="${esc(safe(d.map))}">Відкрити в Google Maps ↗</a></div></article>`).join("");
+      const stays=(t.stays||[]).map(s=>`<article class="stay-card border border-black/10 bg-white p-5"><span class="text-xs font-black uppercase tracking-[.14em] text-primary">${esc(s.label)}</span><h3 class="mt-2 text-lg font-black">${esc(s.title)}</h3><p class="mt-3 text-sm leading-relaxed text-gray-600">${esc(s.text)}</p></article>`).join("");
+      const checks=(t.checks||[]).map((x,i)=>`<details class="border-t border-black/10 py-5"${i===0?" open":""}><summary class="cursor-pointer font-black">${esc(x.title)}</summary><p class="pt-3 text-sm leading-relaxed text-gray-600">${esc(x.text)}</p></details>`).join("");
+      const routeChips=(t.route||[]).map((name,i)=>`<li class="flex items-center gap-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-black text-white">${i+1}</span><strong>${esc(name)}</strong></li>`).join("");
+      const mapAction=selected&&t.map?`<a class="inline-flex bg-primary px-5 py-3 text-center text-sm font-black text-white" target="_blank" rel="noopener noreferrer" href="${esc(safe(t.map))}">Відкрити повний маршрут у Google Maps ↗</a>`:"";
       document.getElementById("app").innerHTML=`
-        <header class="fixed top-0 z-50 h-16 w-full border-b border-gray-100 bg-white/95 shadow-sm backdrop-blur"><div class="mx-auto flex h-full max-w-7xl items-center justify-between px-4"><a href="#top" class="text-xl font-extrabold tracking-tight text-dark">PRIVATE<span class="text-primary">TRAVEL</span></a><nav class="hidden gap-6 text-sm font-semibold md:flex"><a href="#route">Маршрут</a><a href="#days">Дні</a><a href="#stays">Житло</a></nav><span class="rounded-full bg-teal-50 px-3 py-1.5 text-xs font-bold text-primary">${esc(t.status)}</span></div></header>
-        <section id="top" class="relative mt-16 flex min-h-[620px] h-[78vh] w-full flex-col justify-end bg-gray-900">${photo(t.photos[0],"")}<div class="hero-overlay absolute inset-0"></div><div class="absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-7xl px-4 pb-10"><span class="inline-block rounded-md bg-accent px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">Приватний маршрут</span><h1 class="mt-4 max-w-5xl text-4xl font-extrabold leading-tight text-white lg:text-6xl">${esc(t.title)}</h1><p class="mt-4 max-w-3xl text-base leading-relaxed text-white/90 lg:text-lg">${esc(t.subtitle)}</p><div class="mt-6 flex flex-wrap gap-2 text-sm font-semibold text-white"><span class="rounded-md border border-white/30 bg-white/20 px-3 py-1.5">2 дорослих</span><span class="rounded-md border border-white/30 bg-white/20 px-3 py-1.5">${esc(t.date)}</span><span class="rounded-md border border-white/30 bg-white/20 px-3 py-1.5">Старт і фініш: Brandenburg</span></div></div></section>
-        <main class="mx-auto max-w-7xl px-4 py-8 lg:grid lg:grid-cols-12 lg:gap-10 lg:py-12"><div class="min-w-0 space-y-12 lg:col-span-8">
-          <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8"><div class="flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 p-3 text-sm font-bold"><span class="text-primary">Brandenburg</span><span>→</span><span>${esc(t.route.join(" → "))}</span><span>→</span><span class="text-primary">Brandenburg</span></div><p class="mt-6 leading-relaxed text-gray-600">${esc(t.why)}</p></section>
-          ${gallerySection}
-          <section id="route"><div class="mb-5"><p class="text-xs font-bold uppercase tracking-[.16em] text-primary">Маршрут</p><h2 class="text-2xl font-extrabold text-dark">${t.route_selected?"Конкретні зупинки":"Кандидати — порядок ще не обрано"}</h2></div><div class="w-full max-w-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"><div class="flex flex-wrap gap-2">${t.route.map((name,i)=>`<span class="rounded-full bg-teal-50 px-3 py-2 text-sm font-bold text-primary">${i+1}. ${esc(name)}</span>`).join("")}</div><p class="mt-4 text-sm text-gray-600">${t.route_selected?"Послідовність сформована з названих місць; перед поїздкою перевіряються транспорт і години роботи.":"Це регіональне дослідження. Фальшиву лінію маршруту не показуємо, доки напрямок і порядок зупинок не вибрані."}</p>${t.route_selected?`<a class="mt-5 inline-block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-bold text-white" target="_blank" rel="noopener noreferrer" href="${esc(safe(t.map))}">Відкрити маршрут у Google Maps ↗</a>`:""}</div></section>
-          <section id="days"><div class="mb-6"><p class="text-xs font-bold uppercase tracking-[.16em] text-primary">День за днем</p><h2 class="text-2xl font-extrabold text-dark">Мініплан поїздки</h2></div><div class="space-y-5">${days}</div></section>
-          <section id="stays"><div class="mb-5"><p class="text-xs font-bold uppercase tracking-[.16em] text-primary">Проживання</p><h2 class="text-2xl font-extrabold text-dark">Зони, які варто порівняти</h2></div><div class="-mx-4 flex gap-4 overflow-x-auto px-4 pb-4 scroll-row lg:mx-0 lg:px-0">${stays}</div></section>
-          <section class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8"><h2 class="text-2xl font-extrabold text-dark">Що потрібно підтвердити</h2><div class="mt-5 divide-y divide-gray-100">${checks}</div></section>
-        </div><aside class="mt-10 lg:col-span-4 lg:mt-0"><div class="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-lg"><p class="text-xs font-bold uppercase tracking-[.16em] text-primary">Поточний статус</p><h2 class="mt-2 text-2xl font-extrabold">${esc(t.status)}</h2><p class="mt-3 text-sm leading-relaxed text-gray-600">${esc(t.summary)}</p><div class="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Нічого не заброньовано й не оплачено. Ціни та розклади перевіряються перед рішенням.</div><a href="#days" class="mt-5 block rounded-xl bg-accent px-5 py-3 text-center font-extrabold text-white">Дивитися план</a></div></aside></main>`;
+        <div class="border-b border-black bg-accent px-4 py-2 text-center text-xs font-black uppercase tracking-[.12em]">Персональний маршрут · нічого не заброньовано</div>
+        <header class="sticky top-0 z-50 border-b border-black/10 bg-white/95 backdrop-blur"><div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4"><a href="#top" class="text-xl font-black tracking-tight">TRAVEL</a><nav class="hidden gap-6 text-sm font-bold md:flex"><a href="#route">Мапа</a><a href="#places">Місця</a><a href="#stays">Житло</a></nav><span class="bg-cyan-50 px-3 py-1.5 text-xs font-black text-primary">${esc(t.status)}</span></div></header>
+        <main id="top">
+          <section class="mx-auto max-w-[1480px] px-0 py-0 md:px-4 md:pt-4">${heroGallery(t)}</section>
+          <section class="mx-auto max-w-7xl px-4 pb-10 pt-8 lg:pb-14 lg:pt-12"><div class="max-w-5xl"><div class="flex flex-wrap gap-2"><span class="bg-primary px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white">Приватний план</span><span class="border border-black/15 px-3 py-1.5 text-xs font-black">${esc(t.date)}</span></div><h1 class="mt-5 text-4xl font-black leading-[.98] tracking-tight md:text-6xl">${esc(t.title)}</h1><p class="mt-5 max-w-3xl text-lg leading-relaxed text-gray-600">${esc(t.subtitle)}</p><div class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-bold"><span>2 дорослих</span><span>Старт і фініш: Brandenburg</span><span>${esc(t.status)}</span></div></div></section>
+          <div class="mx-auto max-w-7xl px-4 lg:grid lg:grid-cols-12 lg:gap-10"><div class="min-w-0 lg:col-span-8">
+            <section class="section-rule py-10 lg:py-14"><p class="text-xs font-black uppercase tracking-[.18em] text-primary">Твоя подорож</p><h2 class="mt-2 text-3xl font-black">Чому цей варіант вартий уваги</h2><p class="mt-5 text-base leading-relaxed text-gray-600">${esc(t.why)}</p><div class="mt-7 flex flex-wrap items-center gap-2 bg-paper p-4 text-sm font-black"><span class="text-primary">Brandenburg</span><span>→</span><span>${esc((t.route||[]).join(" → "))}</span><span>→</span><span class="text-primary">Brandenburg</span></div></section>
+            <section id="route" class="section-rule py-10 lg:py-14"><div class="mb-6"><p class="text-xs font-black uppercase tracking-[.18em] text-primary">Маршрут</p><h2 class="mt-2 text-3xl font-black">${selected?"Мапа поїздки":"Кандидати без обраного маршруту"}</h2></div><div class="route-shell border border-black/10 bg-white"><div id="route-map" class="route-map ${selected?"":"hidden"}"></div><div class="grid gap-5 border-t border-black/10 p-5 md:grid-cols-[1fr_auto] md:items-end"><div><ol class="grid gap-3">${routeChips}</ol><p id="map-status" class="mt-4 text-sm leading-relaxed text-gray-500">${selected?"Завантажую точні точки маршруту…":"Маршрут ще не обрано — фальшиву лінію не показуємо."}</p></div>${mapAction}</div></div></section>
+            <section id="places" class="section-rule py-10 lg:py-14"><div class="mb-6"><p class="text-xs font-black uppercase tracking-[.18em] text-primary">Фотографії та точки</p><h2 class="mt-2 text-3xl font-black">Місця цієї поїздки</h2></div><div class="scroll-row -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0">${places}</div></section>
+            <section id="stays" class="section-rule py-10 lg:py-14"><div class="mb-6"><p class="text-xs font-black uppercase tracking-[.18em] text-primary">Проживання</p><h2 class="mt-2 text-3xl font-black">Зони, які варто порівняти</h2></div><div class="scroll-row -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 lg:mx-0 lg:grid lg:grid-cols-2 lg:overflow-visible lg:px-0">${stays}</div></section>
+            <section class="section-rule py-10 lg:py-14"><p class="text-xs font-black uppercase tracking-[.18em] text-primary">Перед рішенням</p><h2 class="mt-2 text-3xl font-black">Що потрібно підтвердити</h2><div class="mt-6">${checks}</div></section>
+          </div><aside class="mt-2 lg:col-span-4 lg:mt-0"><div class="sticky top-24 border border-black bg-white p-6 shadow-[8px_8px_0_#f2cf00]"><p class="text-xs font-black uppercase tracking-[.18em] text-primary">Поточний статус</p><h2 class="mt-2 text-2xl font-black">${esc(t.status)}</h2><p class="mt-4 text-sm leading-relaxed text-gray-600">${esc(t.summary)}</p><div class="mt-6 bg-paper p-4 text-sm leading-relaxed">Нічого не заброньовано й не оплачено. Ціни, розклади та доступність перевіряються перед рішенням.</div><a href="#route" class="mt-5 block bg-primary px-5 py-3 text-center font-black text-white">Дивитися мапу</a></div></aside></div>
+        </main>
+        <div class="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between border-t border-black bg-white p-3 lg:hidden"><div><small class="block text-[10px] font-black uppercase tracking-wider text-gray-500">Статус</small><strong>${esc(t.status)}</strong></div><a href="#route" class="bg-primary px-5 py-3 text-sm font-black text-white">Мапа й маршрут</a></div>`;
       document.getElementById("gate").remove();document.getElementById("app").hidden=false;
+      drawMap(t);
     }
+
     async function boot(){try{
       const p=new URLSearchParams(location.hash.slice(1)),k=p.get("k"),trip=p.get("trip");if(!k||!trip)throw 0;
       const key=await crypto.subtle.importKey("raw",dec(k),"AES-GCM",false,["decrypt"]);
