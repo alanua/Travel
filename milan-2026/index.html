@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="uk" data-skeleton-page-revision="6998cd6c0f861b994e649fbde00001c4400bdb0c1a53b3b39d7cc12c9703c3f2" data-skeleton-page-profile="github_pages_encrypted_v1" data-skeleton-page-release="milan-tailwind-journey-v6">
+<html lang="uk" data-skeleton-page-revision="6998cd6c0f861b994e649fbde00001c4400bdb0c1a53b3b39d7cc12c9703c3f2" data-skeleton-page-profile="github_pages_encrypted_v1" data-skeleton-page-release="milan-tailwind-journey-v7">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -12,7 +12,7 @@
 <body><main><div class="mark">T</div><h1>Приватна сторінка подорожі</h1><p id="status">Відкриваю план Мілана…</p><div class="bar" id="bar"></div><p class="error" id="error">Посилання неповне або недійсне.</p></main>
 <script>
 (()=>{'use strict';
-const revision='6998cd6c0f861b994e649fbde00001c4400bdb0c1a53b3b39d7cc12c9703c3f2',payloadFile='payload-milan-v6.txt',nonce='7eAQPNXWPC6Gr62v',aad=new TextEncoder().encode('travel:milan-2026:tailwind-journey-v6');
+const revision='2026-07-26-map-width',payloadFile='payload-milan-v7.txt',nonce='YBPhBJuUxzMdrbw8',aad=new TextEncoder().encode('travel:milan-2026:tailwind-journey-v7');
 const dec=s=>{s=s.replace(/\s/g,'').replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);const r=atob(s);return Uint8Array.from(r,c=>c.charCodeAt(0));};
 const fail=()=>{document.getElementById('status').textContent='Доступ не підтверджено.';document.getElementById('bar').style.display='none';document.getElementById('error').style.display='block';};
 (async()=>{try{const p=new URLSearchParams(location.hash.slice(1)),k=p.get('k'),date=p.get('date')||'2026-10-08';if(!k)return fail();const kb=dec(k);if(kb.length!==32)return fail();const encoded=await fetch(payloadFile+'?rev='+revision,{cache:'no-store',referrerPolicy:'no-referrer'}).then(r=>{if(!r.ok)throw new Error('payload');return r.text();});const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);const compressed=await crypto.subtle.decrypt({name:'AES-GCM',iv:dec(nonce),additionalData:aad,tagLength:128},key,dec(encoded));const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));const page=await new Response(stream).text();if(!page.startsWith('<!DOCTYPE html>'))return fail();history.replaceState(null,'','#k='+encodeURIComponent(k)+'&date='+encodeURIComponent(date));document.open();document.write(page);document.close();}catch(e){console.error(e);fail();}})();
