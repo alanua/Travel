@@ -36,7 +36,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
   (()=>{"use strict";
-    const revision="2026-07-26.2",payloadFile="payload.txt",nonce="WmJrtJPtYFKYXsH4",aad="travel:calendar-trips-2026:v1";
+    const revision="2026-07-26.3",payloadFile="payload.txt",nonce="WmJrtJPtYFKYXsH4",aad="travel:calendar-trips-2026:v1";
     const dec=s=>{s=s.replace(/\s/g,"").replace(/-/g,"+").replace(/_/g,"/");s+="=".repeat((4-s.length%4)%4);return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
     const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const safe=u=>{try{const x=new URL(u,location.href);return ["https:","http:"].includes(x.protocol)?x.href:"#"}catch{return"#"}};
