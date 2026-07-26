@@ -1,0 +1,52 @@
+name: Publish encrypted calendar trip catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'calendar-trips-2026/**'
+      - '.github/workflows/publish-calendar-trips.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: travel-calendar-pages-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Publish verified calendar catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          source_dir="$RUNNER_TEMP/travel-main"
+          pages_dir="$RUNNER_TEMP/travel-pages"
+
+          git clone --depth=1 --branch main \
+            "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$source_dir"
+          test -f "$source_dir/calendar-trips-2026/index.html"
+          test -f "$source_dir/calendar-trips-2026/payload.txt"
+          test "$(find "$source_dir/calendar-trips-2026/assets" -type f | wc -l)" -eq 75
+
+          git clone --depth=1 --branch gh-pages \
+            "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$pages_dir"
+          find "$pages_dir/calendar-trips-2026" -mindepth 1 -delete
+          cp -a "$source_dir/calendar-trips-2026/." "$pages_dir/calendar-trips-2026/"
+
+          cd "$pages_dir"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add calendar-trips-2026
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Publish calendar trip catalog ${GITHUB_SHA::12}"
+          git push origin gh-pages
