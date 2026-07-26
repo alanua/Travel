@@ -33,6 +33,11 @@ jobs:
           git clone --depth=1 --branch main "https://x-access-token:${GH_TOKEN}@github.com/${repo}.git" "$work"
           cd "$work"
 
+          if ! git show --pretty='' --name-only HEAD | grep -q '^milan-2026/'; then
+            echo "Milan files unchanged; skipping Milan-only immutable CDN verification."
+            exit 0
+          fi
+
           expected=$(python3 - <<'PY'
           import re
           from pathlib import Path
