@@ -1,0 +1,35 @@
+name: Verify direct Milan CDN
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/build-milan-inline-bundle.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify direct executable page without interstitial
+        run: |
+          set -euo pipefail
+          base='https://cdn.statically.io/gh/alanua/Travel/9d97d8898f2434597ab9b48f7813ab493fe3160c/milan-2026'
+          headers="$(mktemp)"
+          body="$(mktemp)"
+          status="$(curl --silent --show-error --location --output "$body" --dump-header "$headers" --write-out '%{http_code}' "$base/index.html")"
+          content_type="$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{value=$0} END{sub(/^[^:]+:[[:space:]]*/,"",value); gsub(/\r/,"",value); print value}' "$headers")"
+          test "$status" = '200'
+          printf '%s' "$content_type" | grep --ignore-case --quiet 'text/html'
+          grep --quiet 'Приватна сторінка подорожі' "$body"
+          grep --quiet 'payload-07-tail.txt' "$body"
+          ! grep --ignore-case --quiet 'ще один крок\|one more step\|raw.githack' "$body"
+          for file in payload-00.txt payload-01.txt payload-02.txt payload-03.txt payload-04.txt payload-05.txt payload-06.txt payload-07.txt payload-07-tail.txt payload-08.txt; do
+            test -n "$(curl --fail --silent --show-error --location "$base/$file")"
+          done
+          echo 'status=DONE'
+          echo 'http_status=200'
+          echo 'content_type_html=true'
+          echo 'interstitial_absent=true'
+          echo 'all_payload_files_available=true'
