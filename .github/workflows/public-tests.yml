@@ -1,0 +1,27 @@
+name: Public tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  travel-tests:
+    name: Travel public tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test dependency
+        run: python -m pip install pytest
+      - name: Run public-safe tests
+        run: |
+          python -m pytest -q tests/test_trip_page.py tests/test_trip_page_pipeline.py
+          python validate_trip_page.py
