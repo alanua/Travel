@@ -38,6 +38,13 @@ ANNUAL_MAP_MODE
 - `docs/ROADMAP.md` — staged implementation and dependency gates;
 - `contracts/TRAVEL_CONTRACTS.md` — provider-neutral domain contract catalogue.
 
+Security and contribution guidance:
+
+- `SECURITY.md`
+- `CONTRIBUTING.md`
+- `MAINTAINERS.md`
+- `docs/THREAT_MODEL.md`
+
 The baseline is tracked in `alanua/Travel#1` and derives from the public-safe Skeleton architecture in `alanua/Skeleton#1750`, `#1748`, `#1747`, `#1749`, `#1545` and `#1761`.
 
 ## Public/private boundary
@@ -86,3 +93,7 @@ LIVE_ADAPTERS = NOT_IMPLEMENTED
 PRIVATE_RUNTIME = NOT_CONNECTED
 BOOKING_AUTHORITY = NONE
 ```
+
+## License status
+
+No open-source license has been selected for this repository yet. Public availability should not be interpreted as an open-source license grant.
